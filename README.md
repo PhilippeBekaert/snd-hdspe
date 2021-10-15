@@ -10,19 +10,19 @@ The driver is provided here in source code, to be compiled out of kernel tree.
 - Install the kernel headers and software development toolchain for your linux distribution.
 On ubuntu:
 
-     sudo apt-get install linux-headers-$(uname -r)
+       sudo apt-get install linux-headers-$(uname -r)
      
 - Clone this repository. cd to your clone copy folder and type 
 
-     make 
+       make 
      
 This builds the hdspe.ko kernel driver
 
 - Installing the hdspe.ko driver: If installed, remove the snd-hdspm.ko driver (the old driver for RME HDSPe cards) first:
 
-    sudo -s
-    rmmod snd-hdspm
-    insmod hdspe.ko
+      sudo -s
+      rmmod snd-hdspm
+      insmod hdspe.ko
     
 You need to stop all (audio) applications using the snd-hdspm driver before, in particular PulseAudio or the jack audio server.
 
@@ -30,24 +30,24 @@ You may need to disable secure boot in your systems BIOS before you will be able
     
 - In case you would love or need to see the debug messages spit out by the hdspe.ko module, enable debug log output:
 
-    sudo echo 8 > /proc/sys/kernel/printk
+      sudo echo 8 > /proc/sys/kernel/printk
     
 You may need to add the debug linux kernel boot flag and restart your computer.   
  
 - removing the hdspe.ko driver and re-installing the default snd-hdspm driver:
 
-    sudo -s 
-    rmmod hdspe.ko
-    modprobe snd-hdspm
+      sudo -s 
+      rmmod hdspe.ko
+      modprobe snd-hdspm
 
 - viewing ALSA controls:
 
-    alsactl -f asound.state store
-    less asound.state
+      alsactl -f asound.state store
+     less asound.state
     
 - cleaning up your repository clone folder:
 
-    make clean
+      make clean
     
 
 **Note**
@@ -63,11 +63,11 @@ At this time (October, 15 2021), the driver is early work in progress.
 
 **Acknowledgements**
 
-- This work builds on previous work by the hdspm linux kernel driver authors over the last nearly 20 or so years:
+- This work builds on previous work by the hdspm linux kernel driver authors over the last nearly 20 years:
 Winfried Ritsch, Paul Davis, Marcus Andersson, Thomas Charbonnel, Remy Bruno, Florian Faber and Andrian Knoth.
 - Thanks to [RME](www.rme-audio.com) for providing the necessary information and code for writing this driver.
 - Thanks to [Amptec Belgium](www.amptec.be) for hardware support.
 
 **Author**
 
-[mailto:linux@panokkel.be](Philippe Bekaert), October 2021.
+[Philippe Bekaert](mailto:linux@panokkel.be), October 2021.
