@@ -5,7 +5,7 @@ New linux kernel driver for RME HDSPe MADI/AES/RayDAT/AIO and AIO Pro sound card
 
 - This work builds on previous work by the hdspm linux kernel driver authors over the last 20 or so years. **who ...**
 - Thanks to RME (www.rme-audio.com) for providing the necessary information and code for writing this driver.
-- Thanks to Amptec belgium (www.amptec.be) for material support.
+- Thanks to Amptec Belgium (www.amptec.be) for material support.
 
 **Note**
 
