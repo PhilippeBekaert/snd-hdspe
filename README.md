@@ -1,4 +1,4 @@
-# hdspe
+# snd-hdspe
 New linux kernel driver for RME HDSPe MADI/AES/RayDAT/AIO and AIO Pro sound cards and extension modules.
 
 **Note**
