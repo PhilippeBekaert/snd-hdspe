@@ -10,4 +10,4 @@ New linux kernel driver for RME HDSPe MADI/AES/RayDAT/AIO and AIO Pro sound card
 **Note**
 
 The RME HDSPe MADI-FX is a different beast and is not supported by this driver. See 
-https://github.com/adiknoth/madifx for Adrian Knoths MADI-FX driver work in progress.
+[https://github.com/adiknoth/madifx](Adrian Knoths MADI-FX driver work in progress).
