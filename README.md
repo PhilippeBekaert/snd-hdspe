@@ -24,7 +24,7 @@ This builds the hdspe.ko kernel driver
       rmmod snd-hdspm
       insmod hdspe.ko
     
-You need to stop all (audio) applications using the snd-hdspm driver before, in particular PulseAudio or the jack audio server.
+You need to stop all (audio) applications using the snd-hdspm driver before, in particular PulseAudio and the jack audio server.
 
 You may need to disable secure boot in your systems BIOS before you will be able to load this non-signed kernel module.
     
@@ -60,6 +60,7 @@ The RME HDSPe MADI-FX is a different beast and is not supported by this driver. 
 At this time (October, 15 2021), the driver is early work in progress.
 - AIO Pro and TCO support is pretty complete and lab-tested.
 - MADI/AES/RayDAT card support is to be completed and tested.
+- It is developed on ubuntu 20.04 and has only been tested on such distribution so far.
 
 **Acknowledgements**
 
