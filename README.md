@@ -43,7 +43,7 @@ You may need to add the debug linux kernel boot flag and restart your computer.
 - viewing ALSA controls:
 
       alsactl -f asound.state store
-     less asound.state
+      less asound.state
     
 - cleaning up your repository clone folder:
 
