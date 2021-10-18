@@ -44,10 +44,12 @@ applications.
 **DDS**
 
 The HDSPe cards report effective sampling frequency as a ratio of a fixed frequency constant 
-typical for the card, and the content of a register named the DDS register. This ratio is returned
-in the "DDS" control element.
+typical for the card, and the content of a register. This ratio is returned
+in the "Raw Sample Rate" control element. The frequency constant is the first value, and is a true 64-bit value. The denominator is a 32-bit value.
 
-The "Raw Sampling Rate" control element enables setting a DDS value, determining internal sample rate to sub-Hz accuracy.
+The "DDS" control element enables setting the DDS register, determining internal sample rate to sub-Hz accuracy. The DDS register value is the denominator of the desired sample rate, given as a ratio
+with same numerator as the "Raw Sample Rate" control element, i.o.w. the numerator is the first value
+of the "Raw Sample Rate" control element.
 This can be used to synchronise the cards internal clock to e.g. a system clock.
 
 AIO Pro elements
