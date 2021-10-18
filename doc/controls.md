@@ -23,7 +23,7 @@ Elements common to all supported cards
 | CARD | Clock Mode | RW | Enum | Master or AutoSync.            | 
 | CARD | Preferred AutoSync Reference | RW | Enum | Preferred clock source, if in AutoSync mode.            | 
 | CARD | AutoSync Status | RV | Enum | AutoSync clock status: N/A, No Lock, Lock or Sync, for all sources.            | 
-| CARD | AutoSync Frequency | RV | Enum | Current clock source sample rates, for all sources.            | 
+| CARD | AutoSync Frequency | RV | Enum | Current clock source sample rate class, for all sources.            | 
 
 **Status Polling**
 
