@@ -20,10 +20,35 @@ Elements common to all supported cards
 | CARD | Internal Frequency | RW | Enum | Internal sampling rate.           | 
 | CARD | Current AutoSync Reference | RV | Enum | Current clock source.            | 
 | CARD | External Frequency | RV | Enum | Current external sampling rate.            | 
-| CARD | Clock Mode | RW | Enum | Master or Autosync.            | 
+| CARD | Clock Mode | RW | Enum | Master or AutoSync.            | 
 | CARD | Preferred AutoSync Reference | RW | Enum | Preferred clock source, if in AutoSync mode.            | 
 | CARD | AutoSync Status | RV | Enum | AutoSync clock status: N/A, No Lock, Lock or Sync, for all sources.            | 
 | CARD | AutoSync Frequency | RV | Enum | Current clock source sample rates, for all sources.            | 
+
+**Status Polling**
+
+Use this control element to enable or disable kernel space status polling. The value of this element is
+the frequency at which to perform status polling in the driver, or 0 to disable the feature. 
+If non-zero, the driver will poll for card changes in the value of volatile control elements
+at approximately the indicated frequency.
+A notification event is generated on any status ALSA control elements that have changed. If any
+have changed, the value of the Status Polling control element is reset to 0, notifying client 
+applications, and effectively disabling
+status polling until a client application enables it again by setting a non-zero value. Status
+polling is also automatically disabled after a few seconds. When automatically disabled, a notification
+is sent as well, so that client applications can re-enable it. Whenever an application receives 
+a "Status Polling" event notification, it shall set the value of this control element to the maximum
+of its reported value and the applications desired value to avoid ping-ponging changes with other
+applications.
+
+**DDS**
+
+The HDSPe cards report effective sampling frequency as a ratio of a fixed frequency constant 
+typical for the card, and the content of a register named the DDS register. This ratio is returned
+in the "DDS" control element.
+
+The "Raw Sampling Rate" control element enables setting a DDS value, determining internal sample rate.
+This can be used to synchronise the cards internal clock to e.g. a system clock.
 
 AIO Pro elements
 ----------------
