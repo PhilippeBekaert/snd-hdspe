@@ -1,6 +1,8 @@
 ALSA control elements
 =====================
 
+See [hdspeconf](https://github.com/PhilippeBekaert/hdspeconf) for an example application showing how to use these elements.
+
 Elements common to all supported cards
 --------------------------------------
 
@@ -51,8 +53,6 @@ The "DDS" control element enables setting the DDS register, determining internal
 with same numerator as the "Raw Sample Rate" control element, i.o.w. the numerator is the first value
 of the "Raw Sample Rate" control element.
 This can be used to synchronise the cards internal clock to e.g. a system clock.
-
-See [hdspeconf](https://github.com/PhilippeBekaert/hdspeconf) for an example application showing how to use these elements.
 
 AIO Pro elements
 ----------------
