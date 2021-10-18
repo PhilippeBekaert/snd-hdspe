@@ -58,7 +58,7 @@ You may need to add the debug linux kernel boot flag and restart your computer.
 
 **Documentation**
 
-- [ALSA control elements](doc/control.md)
+- [ALSA control elements provided by this driver](doc/controls.md)
 
 **Status**
 
