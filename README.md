@@ -52,9 +52,9 @@ You may need to add the debug linux kernel boot flag and restart your computer.
 
 **Supported hardware**
 
-- The hdspe driver focusses on the current (2021) range of RME HDSPe PCIe cards: MADI, AES, RayDAT, AIO Pro. AIO is supported as well.
+- The hdspe driver focusses on the current (2021) range of RME HDSPe PCIe cards, except MADI-FX: MADI, AES, RayDAT, AIO Pro. AIO is supported as well.
 
-- The RME HDSPe MADI-FX is a different beast and is not (yet) supported by this driver. See 
+- The RME HDSPe MADI-FX is a different beast and is not supported by this driver. See 
 [Adrian Knoths MADI-FX driver work in progress](https://github.com/adiknoth/madifx).
 
 **Status**
