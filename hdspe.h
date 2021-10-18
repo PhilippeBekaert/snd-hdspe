@@ -460,7 +460,7 @@ enum hdspe_video_format {
 };
 
 #define HDSPE_VIDEO_FORMAT_NAME(i)				\
-	(i == HDSPE_VIDEO_FORMAT_NO_VIDEO    ? "No video" :	\
+	(i == HDSPE_VIDEO_FORMAT_NO_VIDEO    ? "No Video" :	\
 	 i == HDSPE_VIDEO_FORMAT_NTSC        ? "NTSC" :		\
 	 i == HDSPE_VIDEO_FORMAT_PAL         ? "PAL" :		\
 	 "???")
@@ -474,7 +474,7 @@ enum hdspe_tco_source {
 };
 
 #define HDSPE_TCO_SOURCE_NAME(i)				\
-	(i == HDSPE_TCO_SOURCE_WCK        ? "WordClk" :		\
+	(i == HDSPE_TCO_SOURCE_WCK        ? "Word Clk" :	\
 	 i == HDSPE_TCO_SOURCE_VIDEO      ? "Video" :		\
 	 i == HDSPE_TCO_SOURCE_LTC        ? "LTC" :		\
 	 "???")
@@ -508,7 +508,7 @@ enum hdspe_tco_sample_rate {
 #define HDSPE_TCO_SAMPLE_RATE_NAME(i)				\
 	(i == HDSPE_TCO_SAMPLE_RATE_44_1     ? "44.1 KHz" :	\
 	 i == HDSPE_TCO_SAMPLE_RATE_48       ? "48 KHz" :	\
-	 i == HDSPE_TCO_SAMPLE_RATE_FROM_APP ? "from App" :	\
+	 i == HDSPE_TCO_SAMPLE_RATE_FROM_APP ? "From App" :	\
 	 "???")
 
 enum hdspe_wck_conversion {
