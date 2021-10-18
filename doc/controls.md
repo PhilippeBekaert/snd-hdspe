@@ -1,6 +1,8 @@
-#ALSA control elements#
+ALSA control elements
+=====================
 
-#Elements common to all supported cards#
+Elements common to all supported cards
+--------------------------------------
 
 | Interface | Name | Access | Value Type | Description |
 | :- | :- | :- | :- | :- |
@@ -23,7 +25,8 @@
 | CARD | AutoSync Status | RV | Enum |             | 
 | CARD | AutoSync Frequency | RV | Enum |             | 
 
-#AIO Pro elements#
+AIO Pro elements
+----------------
 
 | Interface | Name | Access | Value Type | Description |
 | :- | :- | :- | :- | :- |
@@ -37,7 +40,8 @@
 | CARD | Single Speed WordClk Out | RW | Bool |             | 
 | CARD | Clear TMS | RW | Bool |             | 
 
-#TCO elements#
+TCO elements
+------------
 
 | Interface | Name | Access | Value Type | Description |
 | :- | :- | :- | :- | :- |
