@@ -68,7 +68,7 @@ At this time (October, 15 2021), the driver is early work in progress.
 Winfried Ritsch, Paul Davis, Marcus Andersson, Thomas Charbonnel, Remy Bruno, Florian Faber and Andrian Knoth.
 Blame me for mistakes in the new driver.
 - Thanks to [RME](http://www.rme-audio.com) for providing the necessary information and code for writing this driver.
-- Thanks to [Amptec Belgium](htp://www.amptec.be) for hardware support.
+- Thanks to [Amptec Belgium](http://www.amptec.be) for hardware support.
 
 **Author**
 
