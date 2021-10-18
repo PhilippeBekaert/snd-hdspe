@@ -45,7 +45,7 @@ applications.
 
 The HDSPe cards report effective sampling frequency as a ratio of a fixed frequency constant 
 typical for the card, and the content of a register. This ratio is returned
-in the "Raw Sample Rate" control element. The frequency constant is the first value, and is a true 64-bit value. The denominator is a 32-bit value.
+in the "Raw Sample Rate" control element. The numerator is the first value, and is a true 64-bit value. The denominator is a 32-bit value, and provided as the second value.
 
 The "DDS" control element enables setting the DDS register, determining internal sample rate to sub-Hz accuracy. The DDS register value is the denominator of the desired sample rate, given as a ratio
 with same numerator as the "Raw Sample Rate" control element, i.o.w. the numerator is the first value
