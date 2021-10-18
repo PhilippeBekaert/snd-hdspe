@@ -47,7 +47,7 @@ The HDSPe cards report effective sampling frequency as a ratio of a fixed freque
 typical for the card, and the content of a register named the DDS register. This ratio is returned
 in the "DDS" control element.
 
-The "Raw Sampling Rate" control element enables setting a DDS value, determining internal sample rate.
+The "Raw Sampling Rate" control element enables setting a DDS value, determining internal sample rate to sub-Hz accuracy.
 This can be used to synchronise the cards internal clock to e.g. a system clock.
 
 AIO Pro elements
