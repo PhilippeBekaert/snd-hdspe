@@ -52,6 +52,8 @@ with same numerator as the "Raw Sample Rate" control element, i.o.w. the numerat
 of the "Raw Sample Rate" control element.
 This can be used to synchronise the cards internal clock to e.g. a system clock.
 
+See [hdspeconf](https://github.com/PhilippeBekaert/hdspeconf) for an example application showing how to use these elements.
+
 AIO Pro elements
 ----------------
 
