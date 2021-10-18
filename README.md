@@ -56,6 +56,10 @@ You may need to add the debug linux kernel boot flag and restart your computer.
 - The RME HDSPe MADI-FX is a different beast and is not supported by this driver. See 
 [Adrian Knoths MADI-FX driver work in progress](https://github.com/adiknoth/madifx).
 
+**Documentation**
+
+- [ALSA control elements provided by this driver](doc/controls.md)
+
 **Status**
 
 At this time (October, 15 2021), the driver is early work in progress.
