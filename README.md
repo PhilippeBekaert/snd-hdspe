@@ -1,5 +1,5 @@
 # snd-hdspe
-New linux kernel driver for RME HDSPe MADI/AES/RayDAT/AIO and AIO Pro sound cards and extension modules.
+New linux kernel driver for RME HDSPe MADI / AES / RayDAT / AIO and AIO Pro sound cards and extension modules.
 This driver provides support for the HDSPe AIO Pro card, TCO module LTC output, and an updated
 control interface. It comes with a friendly user space configuration tool: [hdspeconf](https://github.com/PhilippeBekaert/hdspeconf).
 
