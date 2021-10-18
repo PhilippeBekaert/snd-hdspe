@@ -50,12 +50,14 @@ You may need to add the debug linux kernel boot flag and restart your computer.
       make clean
     
 
-**Note**
+**Supported hardware**
+
+- The hdspe driver focusses on the current range of RME HDSPe cards: MADI, AES, RayDAT, AIO Pro (AIO is supported as well).
 
 - The RME HDSPe MADI-FX is a different beast and is not (yet) supported by this driver. See 
 [Adrian Knoths MADI-FX driver work in progress](https://github.com/adiknoth/madifx).
 
-- Older RME HDSP cards are not supported by this driver either. Use the stock snd-hdsp driver for the RPM, Digiface, Multiface, etc...
+- Older RME HDSP cards are not supported by this driver. Use the stock snd-hdsp driver for the RPM, Digiface, Multiface, etc...
 
 **Status**
 
