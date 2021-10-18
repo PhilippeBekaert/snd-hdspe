@@ -1,6 +1,13 @@
 ALSA control elements
 =====================
 
+As usual
+
+     alsactl -f asound.state store
+
+stores the actual ALSA control elements with all metadata and exact enumeration values 
+in the file name asound.state.
+
 See [hdspeconf](https://github.com/PhilippeBekaert/hdspeconf) for an example application showing how to use these elements.
 
 Elements common to all supported cards
