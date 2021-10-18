@@ -60,14 +60,15 @@ The RME HDSPe MADI-FX is a different beast and is not supported by this driver. 
 At this time (October, 15 2021), the driver is early work in progress.
 - AIO Pro and TCO support is pretty complete and lab-tested.
 - MADI/AES/RayDAT card support is to be completed and tested.
-- It is developed on ubuntu 20.04 and has only been tested on such distribution so far.
+- It is developed on ubuntu studio 20.04 and has only been tested on that distribution so far.
 
 **Acknowledgements**
 
 - This work builds on previous work by the hdspm linux kernel driver authors over the last nearly 20 years:
 Winfried Ritsch, Paul Davis, Marcus Andersson, Thomas Charbonnel, Remy Bruno, Florian Faber and Andrian Knoth.
-- Thanks to [RME](www.rme-audio.com) for providing the necessary information and code for writing this driver.
-- Thanks to [Amptec Belgium](www.amptec.be) for hardware support.
+Blame me for mistakes in the new driver.
+- Thanks to [RME](http://www.rme-audio.com) for providing the necessary information and code for writing this driver.
+- Thanks to [Amptec Belgium](htp://www.amptec.be) for hardware support.
 
 **Author**
 
