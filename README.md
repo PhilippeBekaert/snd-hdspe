@@ -70,6 +70,10 @@ Blame [me](mailto:linux@panokkel.be) for mistakes in the new driver.
 - Thanks to [RME](http://www.rme-audio.com) for providing the necessary information and code for writing this driver.
 - Thanks to [Amptec Belgium](http://www.amptec.be) for hardware support.
 
+**License and (No) Warranty**
+
+See [LICENSE](https://github.com/PhilippeBekaert/snd-hdspe/blob/main/LICENSE).
+
 **Author**
 
 [Philippe Bekaert](mailto:linux@panokkel.be), October 2021.
