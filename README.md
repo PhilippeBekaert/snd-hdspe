@@ -52,8 +52,10 @@ You may need to add the debug linux kernel boot flag and restart your computer.
 
 **Note**
 
-The RME HDSPe MADI-FX is a different beast and is not supported by this driver. See 
+- The RME HDSPe MADI-FX is a different beast and is not (yet) supported by this driver. See 
 [Adrian Knoths MADI-FX driver work in progress](https://github.com/adiknoth/madifx).
+
+- Older RME HDSP cards are not supported by this driver either. Use the stock snd-hdsp driver for the RPM, Digiface, Multiface, etc...
 
 **Status**
 
