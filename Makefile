@@ -1,4 +1,4 @@
-obj-m += hdspe.o hdspm.o
+obj-m += hdspe.o
 hdspe-objs := hdspe_core.o hdspe_pcm.o hdspe_midi.o hdspe_hwdep.o \
 	hdspe_proc.o hdspe_control.o hdspe_mixer.o hdspe_tco.o \
 	hdspe_common.o hdspe_madi.o hdspe_aes.o hdspe_raio.o \
