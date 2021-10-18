@@ -1,6 +1,3 @@
-Card 0 : HDA Intel PCH at 0xad318000 irq 175
-Card 1 : HDA NVidia at 0xad080000 irq 17
-Card 2 : RME AIO Pro S/N 24052016 at 0x94000000, irq 19
 | Interface | Name | Access | Value Type | Description |
 | :- | :- | :- | :- | :- |
 | CARD | ADAT Internal | RW | Bool |             | 
