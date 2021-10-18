@@ -17,7 +17,7 @@ Elements common to all supported cards
 | CARD | Status Polling | RW | Int | See below **Status Polling**            | 
 | HWDEP | DDS | RW | Int | See below **DDS**            | 
 | HWDEP | Raw Sample Rate | RV | Int64 | See below **DDS**            | 
-| CARD | Internal Frequency | RW | Enum | Internal sampling rate.           | 
+| CARD | Internal Frequency | RW | Enum | Internal sampling rate class: 32 KHz, 44.1 KHz, 48 KHz etc....           | 
 | CARD | Current AutoSync Reference | RV | Enum | Current clock source.            | 
 | CARD | External Frequency | RV | Enum | Current external sampling rate.            | 
 | CARD | Clock Mode | RW | Enum | Master or AutoSync.            | 
