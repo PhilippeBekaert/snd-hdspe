@@ -6,24 +6,24 @@ Elements common to all supported cards
 
 | Interface | Name | Access | Value Type | Description |
 | :- | :- | :- | :- | :- |
-| CARD | Card Revision | R | Int |             | 
-| CARD | Firmware Build | R | Int |             | 
-| CARD | Serial | R | Int |             | 
-| CARD | TCO Present | R | Bool |             | 
-| CARD | Capture PID | RV | Int |             | 
-| CARD | Playback PID | RV | Int |             | 
-| CARD | Running | RV | Bool |             | 
-| CARD | Buffer Size | RV | Int |             | 
-| CARD | Status Polling | RW | Int |             | 
-| HWDEP | DDS | RW | Int |             | 
-| HWDEP | Raw Sample Rate | RV | Int64 |             | 
-| CARD | Internal Frequency | RW | Enum |             | 
-| CARD | Current AutoSync Reference | RV | Enum |             | 
-| CARD | External Frequency | RV | Enum |             | 
-| CARD | Clock Mode | RW | Enum |             | 
-| CARD | Preferred AutoSync Reference | RW | Enum |             | 
-| CARD | AutoSync Status | RV | Enum |             | 
-| CARD | AutoSync Frequency | RV | Enum |             | 
+| CARD | Card Revision | R | Int | PCI class revision. Uniquely identifies card model.  | 
+| CARD | Firmware Build | R | Int | Firmware version.           | 
+| CARD | Serial | R | Int | Card serial number.            | 
+| CARD | TCO Present | R | Bool | Whether or not TCO module is present.            | 
+| CARD | Capture PID | RV | Int | Current capture process ID, or -1.            | 
+| CARD | Playback PID | RV | Int | Current playback process ID, or -1.            | 
+| CARD | Running | RV | Bool | Whether or not some process is capturing or playing back.            | 
+| CARD | Buffer Size | RV | Int | Sample buffer size, in frames.            | 
+| CARD | Status Polling | RW | Int | See below **Status Polling**            | 
+| HWDEP | DDS | RW | Int | See below **DDS**            | 
+| HWDEP | Raw Sample Rate | RV | Int64 | See below **DDS**            | 
+| CARD | Internal Frequency | RW | Enum | Internal sampling rate.           | 
+| CARD | Current AutoSync Reference | RV | Enum | Current clock source.            | 
+| CARD | External Frequency | RV | Enum | Current external sampling rate.            | 
+| CARD | Clock Mode | RW | Enum | Master or Autosync.            | 
+| CARD | Preferred AutoSync Reference | RW | Enum | Preferred clock source, if in AutoSync mode.            | 
+| CARD | AutoSync Status | RV | Enum | AutoSync clock status: N/A, No Lock, Lock or Sync, for all sources.            | 
+| CARD | AutoSync Frequency | RV | Enum | Current clock source sample rates, for all sources.            | 
 
 AIO Pro elements
 ----------------
