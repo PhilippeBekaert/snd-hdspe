@@ -31,7 +31,7 @@ Use this control element to enable or disable kernel space status polling. The v
 the frequency at which to perform status polling in the driver, or 0 to disable the feature. 
 If non-zero, the driver will poll for card changes in the value of volatile control elements
 at approximately the indicated frequency.
-A notification event is generated on any status ALSA control elements that have changed. If any
+A notification event is generated on any status ALSA control elements that has changed. If any
 have changed, the value of the Status Polling control element is reset to 0, notifying client 
 applications, and effectively disabling
 status polling until a client application enables it again by setting a non-zero value. Status
