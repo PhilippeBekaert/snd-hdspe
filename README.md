@@ -15,28 +15,28 @@ On ubuntu:
 
        make 
      
-This builds the hdspe.ko kernel driver
+This builds the snd-hdspe.ko kernel driver
 
-- Installing the hdspe.ko driver: If installed, remove the snd-hdspm.ko driver (the old driver for RME HDSPe cards) first:
+- Installing the snd-hdspe.ko driver: If installed, remove the snd-hdspm.ko driver (the old driver for RME HDSPe cards) first:
 
       sudo -s
       rmmod snd-hdspm
-      insmod hdspe.ko
+      insmod snd-hdspe.ko
     
 You need to stop all (audio) applications using the snd-hdspm driver before, in particular PulseAudio and the jack audio server.
 
 You may need to disable secure boot in your systems BIOS before you will be able to load this non-signed kernel module.
     
-- In case you would love or need to see the debug messages spit out by the hdspe.ko module, enable debug log output:
+- In case you would love or need to see the debug messages spit out by the snd-hdspe.ko module, enable debug log output:
 
       sudo echo 8 > /proc/sys/kernel/printk
     
 You may need to add the debug linux kernel boot flag and restart your computer.   
  
-- removing the hdspe.ko driver and re-installing the default snd-hdspm driver:
+- removing the snd-hdspe.ko driver and re-installing the default snd-hdspm driver:
 
       sudo -s 
-      rmmod hdspe.ko
+      rmmod snd-hdspe.ko
       modprobe snd-hdspm
 
 - viewing ALSA controls:
@@ -48,10 +48,31 @@ You may need to add the debug linux kernel boot flag and restart your computer.
 
       make clean
     
+**Instructions with DKMS build**
+
+[Dynamic Kernel Module System (DKMS)](https://github.com/dell/dkms) makes it easy to maintain
+out-of-tree kernel modules. It's preferable to use DKMS instead of handy installation since it
+assists module signing for secure boot.
+
+- Install DKMS package. On Ubuntu:
+
+        sudo apt install dkms
+
+- For preparation, execute cd to your clone copy folder, then type
+
+        sudo ln -s $(pwd) /usr/src/alsa-hdspe-0.0
+
+- For installing, type
+
+        sudo dkms install alsa-hdspe/0.0
+
+- For uninstalling, type
+
+        sudo dkms remove alsa-hdspe/0.0
 
 **Supported hardware**
 
-- The hdspe driver focusses on the current (2021) range of RME HDSPe PCIe cards, except MADI-FX: MADI, AES, RayDAT, AIO Pro. AIO is supported as well.
+- The snd-hdspe driver focusses on the current (2021) range of RME HDSPe PCIe cards, except MADI-FX: MADI, AES, RayDAT, AIO Pro. AIO is supported as well.
 
 - The RME HDSPe MADI-FX is a different beast and is not supported by this driver. See 
 [Adrian Knoths MADI-FX driver work in progress](https://github.com/adiknoth/madifx).
