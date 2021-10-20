@@ -1,5 +1,5 @@
-obj-m += hdspe.o
-hdspe-objs := hdspe_core.o hdspe_pcm.o hdspe_midi.o hdspe_hwdep.o \
+obj-m += snd-hdspe.o
+snd-hdspe-objs := hdspe_core.o hdspe_pcm.o hdspe_midi.o hdspe_hwdep.o \
 	hdspe_proc.o hdspe_control.o hdspe_mixer.o hdspe_tco.o \
 	hdspe_common.o hdspe_madi.o hdspe_aes.o hdspe_raio.o \
 	hdspe_ltc_math.o
@@ -18,7 +18,7 @@ clean:
 
 insert: default
 	-rmmod snd-hdspm
-	insmod hdspe.ko
+	insmod snd-hdspe.ko
 
 remove:
 	rmmod hdspe
