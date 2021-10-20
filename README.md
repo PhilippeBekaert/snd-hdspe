@@ -48,6 +48,27 @@ You may need to add the debug linux kernel boot flag and restart your computer.
 
       make clean
     
+**Instructions with DKMS build**
+
+[Dynamic Kernel Module System (DKMS)](https://github.com/dell/dkms) makes it easy to maintain
+out-of-tree kernel modules. It's preferable to use DKMS instead of handy installation since it
+assists module signing for secure boot.
+
+- Install DKMS package. On Ubuntu:
+
+        sudo apt install dkms
+
+- For preparation, execute cd to your clone copy folder, then type
+
+        sudo ln -s $(pwd) /usr/src/alsa-hdspe-0.0
+
+- For installing, type
+
+        sudo dkms install alsa-hdspe/0.0
+
+- For uninstalling, type
+
+        sudo dkms remove alsa-hdspe/0.0
 
 **Supported hardware**
 

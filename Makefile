@@ -1,5 +1,10 @@
 obj-m += sound/pci/hdsp/
 
+# The runtime of DKMS has this environment variable to build for several versions of Linux kernel.
+ifndef KERNELRELEASE
+KERNELRELEASE := $(shell uname -r)
+endif
+
 KDIR    ?= /lib/modules/$(shell uname -r)/build
 PWD     := $(shell pwd)
 EXTRA_CFLAGS += -DDEBUG -DCONFIG_SND_DEBUG
