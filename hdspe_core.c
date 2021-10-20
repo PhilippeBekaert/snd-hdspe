@@ -69,6 +69,9 @@ MODULE_AUTHOR
 MODULE_DESCRIPTION("RME HDSPe");
 MODULE_LICENSE("GPL");
 
+// This driver can obsolete old snd-hdspm driver.
+MODULE_ALIAS("snd-hdspm");
+
 
 /* RME PCI vendor ID as it is reported by the RME AIO PRO card */
 #ifndef PCI_VENDOR_ID_RME
