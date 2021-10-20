@@ -9,10 +9,10 @@ PWD     := $(shell pwd)
 EXTRA_CFLAGS += -DDEBUG -DCONFIG_SND_DEBUG
 
 default: depend
-	$(MAKE) -C $(KDIR) M=$(PWD) modules
+	$(MAKE) W=1 -C $(KDIR) M=$(PWD) modules
 
 clean:
-	$(MAKE) -C $(KDIR) M=$(PWD) clean
+	$(MAKE) W=1 -C $(KDIR) M=$(PWD) clean
 	-rm *~
 	-touch deps
 
