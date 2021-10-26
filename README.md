@@ -15,17 +15,21 @@ On ubuntu:
 
        make 
      
-This builds the snd-hdspe.ko kernel driver
+This builds the snd-hdspe.ko kernel driver in the sound/pci/hdsp/hdspe subdirectoy.
 
-- Installing the snd-hdspe.ko driver: If installed, remove the snd-hdspm.ko driver (the old driver for RME HDSPe cards) first:
+- Manually installing the snd-hdspe.ko driver: If installed, remove the snd-hdspm.ko driver (the old driver for RME HDSPe cards) first:
 
       sudo -s
       rmmod snd-hdspm
-      insmod snd-hdspe.ko
+      insmod sound/pci/hdsp/hdspe/snd-hdspe.ko
     
 You need to stop all (audio) applications using the snd-hdspm driver before, in particular PulseAudio and the jack audio server.
 
-You may need to disable secure boot in your systems BIOS before you will be able to load this non-signed kernel module.
+When manually inserting a non-signed kernel module like this, you may need to disable secure boot in your systems BIOS.
+
+See below for how to install the kernel module using DKMS. Installing with DKMS
+is preferred if you plan to use this module on a regular basis instead of just
+testing it once.
     
 - In case you would love or need to see the debug messages spit out by the snd-hdspe.ko module, enable debug log output:
 
@@ -33,25 +37,25 @@ You may need to disable secure boot in your systems BIOS before you will be able
     
 You may need to add the debug linux kernel boot flag and restart your computer.   
  
-- removing the snd-hdspe.ko driver and re-installing the default snd-hdspm driver:
+- Removing the snd-hdspe.ko driver and re-installing the default snd-hdspm driver:
 
       sudo -s 
       rmmod snd-hdspe.ko
       modprobe snd-hdspm
 
-- viewing ALSA controls:
+- Viewing ALSA controls:
 
       alsactl -f asound.state store
       less asound.state
     
-- cleaning up your repository clone folder:
+- Cleaning up your repository clone folder:
 
       make clean
     
 **Instructions with DKMS build**
 
 [Dynamic Kernel Module System (DKMS)](https://github.com/dell/dkms) makes it easy to maintain
-out-of-tree kernel modules. It's preferable to use DKMS instead of handy installation since it
+out-of-tree kernel modules. It's preferable to use DKMS instead of manually installation since it
 assists module signing for secure boot.
 
 - Install DKMS package. On Ubuntu:

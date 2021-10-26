@@ -23,10 +23,10 @@ clean:
 
 insert: default
 	-rmmod snd-hdspm
-	insmod snd-hdspe.ko
+	insmod sound/pci/hdsp/hdspe/snd-hdspe.ko
 
 remove:
-	rmmod hdspe
+	rmmod snd-hdspe
 
 list-controls:
 	-rm asound.state
