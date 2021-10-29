@@ -65,21 +65,6 @@ with same numerator as the "Raw Sample Rate" control element, i.o.w. the numerat
 of the "Raw Sample Rate" control element.
 This can be used to synchronise the cards internal clock to e.g. a system clock.
 
-AIO Pro elements
-----------------
-
-| Interface | Name | Access | Value Type | Description |
-| :- | :- | :- | :- | :- |
-| CARD | Input Level | RW | Enum |             | 
-| CARD | Output Level | RW | Enum |             | 
-| CARD | Phones Level | RW | Enum |             | 
-| CARD | S/PDIF In | RW | Enum |             | 
-| CARD | S/PDIF Out Optical | RW | Bool |             | 
-| CARD | S/PDIF Out Professional | RW | Bool |             | 
-| CARD | ADAT Internal | RW | Bool |             | 
-| CARD | Single Speed WordClk Out | RW | Bool |             | 
-| CARD | Clear TMS | RW | Bool |             | 
-
 TCO elements
 ------------
 
@@ -182,3 +167,21 @@ The 'From App' LTC sample rate setting will set the TCO LTC engine sample rate
 to match the audio card sample rate class: 44.1 KHz if the sound card is
 running at 44.1 KHz, and 48 KHz otherwise (the TCO does not support 32 KHz
 sample rate).
+
+
+AIO Pro elements
+----------------
+
+| Interface | Name | Access | Value Type | Description |
+| :- | :- | :- | :- | :- |
+| CARD | Input Level | RW | Enum | Analog audio input **level** | 
+| CARD | Output Level | RW | Enum | Analog audio output **level**            | 
+| CARD | Phones Level | RW | Enum | Headphones output level: High power or Low power | 
+| CARD | S/PDIF In | RW | Enum | S/PDIF input connector: coaxial, optical or internal | 
+| CARD | S/PDIF Out Optical | RW | Bool | Output S/PDIF over TOSLINK | 
+| CARD | S/PDIF Out Professional | RW | Bool | Output professional mode S/PDIF | 
+| CARD | ADAT Internal | RW | Bool | Use the internal connector for ADAT | 
+| CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
+| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples | 
+
+
