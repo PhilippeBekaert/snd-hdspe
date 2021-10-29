@@ -14,7 +14,7 @@ The controls correspond for most part with the similarly named controls in the W
 See the RME HDSPe sound card user guides, and [hdspeconf](https://github.com/PhilippeBekaert/hdspeconf) documentation
 for more information on these controls.
 
-Elements common to all supported cards
+Controls common to all supported cards
 --------------------------------------
 
 | Interface | Name | Access | Value Type | Description |
@@ -65,7 +65,7 @@ with same numerator as the "Raw Sample Rate" control element, i.o.w. the numerat
 of the "Raw Sample Rate" control element.
 This can be used to synchronise the cards internal clock to e.g. a system clock.
 
-TCO elements
+TCO controls
 ------------
 
 | Interface | Name | Access | Value Type | Description |
@@ -169,7 +169,7 @@ running at 44.1 KHz, and 48 KHz otherwise (the TCO does not support 32 KHz
 sample rate).
 
 
-AIO Pro elements
+AIO Pro controls
 ----------------
 
 | Interface | Name | Access | Value Type | Description |
