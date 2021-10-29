@@ -164,7 +164,7 @@ SMPTE 12-1 time codes contain control bits indicating the frame rate of the LTC:
 reported in the 'LTC In Frame Rate' control. 
 
 The effective frame rate may however deviate from what the frame rate bits in the LTC codes indicate. For instance, NTSC 29.97 fps is reported
-at 30 fps. The deviation between actual and standard frame rate is reported in the 'LTC In Pull Factor' control. This control returns a value of
+as 30 fps. The deviation between actual and standard frame rate is reported in the 'LTC In Pull Factor' control. This control returns a value of
 1000 for nominal speed, less than 1000 for slower rates and greater than 1000 for higher effective rate. The value results from measuring the
 actual LTC frame duration in the driver.
 
