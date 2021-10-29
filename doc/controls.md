@@ -182,6 +182,6 @@ AIO Pro elements
 | CARD | S/PDIF Out Professional | RW | Bool | Output professional mode S/PDIF | 
 | CARD | ADAT Internal | RW | Bool | Use the internal connector for ADAT | 
 | CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
-| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples | 
+| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
 
 
