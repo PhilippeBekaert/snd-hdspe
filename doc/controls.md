@@ -83,8 +83,8 @@ TCO elements
 | :- | :- | :- | :- | :- |
 | CARD | LTC In | RV | Int64 | Incoming LTC code - see below **LTC control** | 
 | CARD | LTC In Drop Frame | RV | Bool | Whether incoming LTC is drop frame format or not | 
-| CARD | LTC In Frame Rate | RV | Enum | Incoming LTC frame rate: 24, 25 or 30 fps | 
-| CARD | LTC In Pull Factor | RV | Int | Incoming LTC actual frame rate deviation from standard | 
+| CARD | LTC In Frame Rate | RV | Enum | Incoming **LTC frame rate**: 24, 25 or 30 fps | 
+| CARD | LTC In Pull Factor | RV | Int | Incoming **LTC frame rate** deviation from standard | 
 | CARD | LTC In Valid | RV | Bool | Whether or not valid LTC input is detected | 
 | CARD | LTC Out | W | Int64 | LTC output control - see below **LTC control** |
 | CARD | LTC Time | RV | Int64 | Current periods end LTC time - see below **LTC control** | 
@@ -152,6 +152,20 @@ value of the real-time clock at the time the request gets processed, and add
 the number of seconds indicated in the time field of the control. Such
 hexadecimal time code results from setting the first value of the 'LTC Out'
 control to -1.
+
+**LTC frame rate**
+
+SMPTE 12-1 time codes contain control bits indicating the frame rate of the LTC: 24, 25 or 30 fps. The frame rate standard of incoming LTC is
+reported in the 'LTC In Frame Rate' control. 
+
+The effective frame rate may however deviate from what the frame rate bits in the LTC codes indicate. For instance, NTSC 29.97 fps is reported
+at 30 fps. The deviation between actual and standard frame rate is reported in the 'LTC In Pull Factor' control. This control returns a value of
+1000 for nominal speed, less than 1000 for slower rates and greater than 1000 for higher effective rate. The value results from measuring the
+actual LTC frame duration in the driver.
+
+Example: 29.97 NTSC pull down LTC will be reported with a pull factor of 999. 
+
+The 'LTC Frame Rate' property controls the TCO LTC engine frame rate. Usually, 'LTC Frame Rate' and 'TCO Pull' shall be set to match the incoming LTC effective frame rate, in order to produce a clean 44.1 KHz or 48 KHz sample clock synchronisation. But it also sets the frame rate for LTC output.
 
 **From App**
 
