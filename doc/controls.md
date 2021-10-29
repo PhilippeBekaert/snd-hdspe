@@ -94,9 +94,9 @@ TCO elements
 | CARD | TCO Lock | RV | Bool | Whether or not the TCO is locked to LTC, Video or Word Clock | 
 | CARD | TCO Pull | RW | Enum | Pull Up / Pull Down factor |
 | CARD | TCO Sync Source | RW | Enum | TCO preferred synchronisation source: LTC, Video or Word Clock | 
-| CARD | TCO Video Format | RV | Enum | Video format reference signal detected | 
-| CARD | TCO WCK Conversion | RW | Enum | World clock conversion 1:1, 44.1 -> 48 KHz, 48 -> 44.1 KHz | 
-| CARD | TCO Word Term | RW | Bool | Whether or not to terminate the word clock/video input BNC | 
+| CARD | TCO Video Format | RV | Enum | Video format reference signal detected: PAL or NTSC blackburst | 
+| CARD | TCO WCK Conversion | RW | Enum | World clock rate conversion 1:1, 44.1 -> 48 KHz, 48 -> 44.1 KHz | 
+| CARD | TCO Word Term | RW | Bool | Whether or not to 75 Ohm terminate the word clock/video input BNC | 
 | CARD | TCO WordClk Valid | RV | Bool | Whether or not a valid word clock signal is detected | 
 | CARD | TCO WordClk Speed | RV | Enum | Detected input word clock speed | 
 
