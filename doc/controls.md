@@ -148,12 +148,15 @@ and time.
 
 Outputting wall clock LTC: set 'LTC Out' time code to the special value -1,
 and the time to the number of seconds east of GMT corresponding to the
-time zone, and corrected for daylight saving time if in effect.
+time zone, and corrected for daylight saving time if in effect, if the computers
+real time clock is set to UTC and not to local time zone.
 The driver will replace a hexadecimal time code of 3f:7f:7f:3f by the exact
 value of the real-time clock at the time the request gets processed, and add
 the number of seconds indicated in the time field of the control. Such
 hexadecimal time code results from setting the first value of the 'LTC Out'
 control to -1.
+
+The deviation of local time w.r.t. UTC can be queried with the localtime_r() GNU libc call.
 
 **LTC frame rate**
 
