@@ -106,6 +106,8 @@ If a valid LTC signal is presented to the TCO module, the 'LTC In' control
 will report two 64-bit values: the current LTC 64-bit code and the LTC time
 at which that current code started.
 
+The current LTC code is the code of the last fully received LTC frame, incremented by one frame. The current LTC start time in fact is the time at which that last fully received LTC frame ended. This is correct, and what a user expects, for continuous and forward running LTC. For stationary, jumping, or backward running LTC, the code shall be corrected appropriately.
+
 LTC output is started by writing the 'LTC Out' control. 
 The 'LTC Out' control contains two 64-bit values similar to the 'LTC In' control
 element: the LTC 64-bit code
