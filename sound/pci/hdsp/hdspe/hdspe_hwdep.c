@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file hdspe_hwdep.c
+ * hdspe_hwdep.c
  * @brief RME HDSPe driver HWDEP interface.
  *
  * 20210728 - Philippe.Bekaert@uhasselt.be

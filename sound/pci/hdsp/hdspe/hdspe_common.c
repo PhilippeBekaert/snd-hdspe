@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file hdspe_common.c
+ * hdspe_common.c
  * @brief RME HDSPe cards common driver methods.
  *
  * 20210727,28,29 - Philippe.Bekaert@uhasselt.be
@@ -53,7 +53,7 @@ u32 hdspe_freq_sample_rate(enum hdspe_freq f)
 }
 
 /* Get the speed mode reflecting the sample rate f */
-enum hdspe_speed hdspe_sample_rate_speed_mode(u32 rate)
+static enum hdspe_speed hdspe_sample_rate_speed_mode(u32 rate)
 {
 	if (rate < 56000)
 		return HDSPE_SPEED_SINGLE;
@@ -64,7 +64,7 @@ enum hdspe_speed hdspe_sample_rate_speed_mode(u32 rate)
 }
 
 /* Get the speed mode encoded in the frequency class */
-enum hdspe_speed hdspe_freq_speed(enum hdspe_freq f)
+static enum hdspe_speed hdspe_freq_speed(enum hdspe_freq f)
 {
 	switch (f) {
 	case 1: case 2: case 3:

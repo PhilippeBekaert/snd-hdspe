@@ -4,6 +4,8 @@
  * @brief RME HDSPe 32-bit LTC code optimised math for TCO module.
  *
  * 20210930,1001,08 - Philippe.Bekaert@uhasselt.be
+ *
+ * TODO: 24 or 25 fps drop-frame format ??
  */
 
 #ifndef HDSPE_LTC_MATH_H

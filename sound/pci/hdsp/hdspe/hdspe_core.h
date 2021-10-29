@@ -791,8 +791,9 @@ struct hdspe_tco {
 	bool ltc_flywheel;       /* loop back time code output to input       */
 
 	/* Current LTC in */
-	bool ltc_changed;         /* set when new LTC has been received       */
-	u32 ltc_in;         /* Current LTC, corrected for running direction   */
+	bool ltc_changed;        /* set when new LTC has been received        */
+	u32 ltc_in;              /* current LTC: last parsed LTC + 1 frame    */
+	u64 ltc_time;            /* frame_count at start of current period    */
 	u64 ltc_in_frame_count;  /* frame count at start of current LTC       */
 
 	/* for status polling */
@@ -1238,8 +1239,8 @@ extern void hdspe_tco_mtc(struct hdspe* hdspe,
 			  const u8* data, int count);
 
 /* Scheduled from the audio interrupt handler */
-extern void hdspe_tco_work(struct work_struct *work);
-
+extern void hdspe_tco_period_elapsed(struct hdspe* hdspe);
+	
 /* TCO module status polling */
 extern bool hdspe_tco_notify_status_change(struct hdspe* hdspe);
 

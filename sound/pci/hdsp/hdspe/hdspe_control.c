@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file hdspe-control.c
+ * hdspe-control.c
  * @brief RME HDSPe sound card driver status and control interface.
  *
  * 20210727,28,29,30,0908,09,10 - Philippe.Bekaert@uhasselt.be
@@ -17,9 +17,10 @@
 #include "hdspe_control.h"
 
 /**
- * hdspe_init_autosync_tables: calculates three tables needed for the 
+ * hdspe_init_autosync_tables: calculates tables needed for the 
  * preferred sync and autosync ref properties below, given the list of 
  * autosync clock sources for a card:
+ * Tables calculated:
  * - hdspe::t.autosync_texts : a text label for each clock source,
  * plus HDSPE_CLOCK_SOURCE_INTERN at the end of the list.
  * - hdspe::t.autosync_idx2ref : maps a property index to a 
@@ -289,7 +290,7 @@ HDSPE_RW_ENUM_METHODS(clock_mode,
 
 /* --------------- preferred sync reference ------------------ */
 
-int snd_hdspe_info_pref_sync_ref(struct snd_kcontrol *kcontrol,
+static int snd_hdspe_info_pref_sync_ref(struct snd_kcontrol *kcontrol,
 				 struct snd_ctl_elem_info *uinfo)
 {
 	struct hdspe *hdspe = snd_kcontrol_chip(kcontrol);
@@ -359,7 +360,7 @@ int snd_hdspe_info_sync_status(struct snd_kcontrol *kcontrol,
 }
 #endif /*OLDSTUFF*/
 
-int snd_hdspe_get_sync_status(struct snd_kcontrol *kcontrol,
+static int snd_hdspe_get_sync_status(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
 	struct hdspe *hdspe = snd_kcontrol_chip(kcontrol);

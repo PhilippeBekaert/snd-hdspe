@@ -134,16 +134,21 @@ static irqreturn_t snd_hdspe_interrupt(int irq, void *dev_id)
 
 	if (audio) {
 		hdspe_update_frame_count(hdspe);
+		if (hdspe->tco) {
+			/* LTC In update must happen before client
+			 * apps are notified of a new period */
+			hdspe_tco_period_elapsed(hdspe);
+		}
 		
 		if (hdspe->capture_substream)
 			snd_pcm_period_elapsed(hdspe->capture_substream);
 
 		if (hdspe->playback_substream)
 			snd_pcm_period_elapsed(hdspe->playback_substream);
-
+#ifdef NEVER
 		if (hdspe->tco)
 			queue_work(system_highpri_wq, &hdspe->tco_work);
-
+#endif /*NEVER*/
 		/* status polling at user controlled rate */
 		if (hdspe->status_polling > 0 &&
 		    jiffies >= hdspe->last_status_jiffies
@@ -174,6 +179,12 @@ static irqreturn_t snd_hdspe_interrupt(int irq, void *dev_id)
 	}
 
 	return IRQ_HANDLED;
+}
+
+static void hdspe_tco_work(struct work_struct* work)
+{
+	struct hdspe* hdspe = container_of(work, struct hdspe, tco_work);
+	hdspe_tco_period_elapsed(hdspe);
 }
 
 /* Start audio and TCO MTC interrupts */

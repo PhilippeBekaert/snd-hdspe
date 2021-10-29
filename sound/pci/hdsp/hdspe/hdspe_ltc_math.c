@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file hdspe_ltc_math.c
+ * hdspe_ltc_math.c
  * @brief RME HDSPe 32-bit LTC code optimised math for TCO module.
  *
  * 20210930,1001,08 - Philippe.Bekaert@uhasselt.be
@@ -43,6 +43,7 @@ int hdspe_ltc32_cmp(u32 ltc1, u32 ltc2)
 /**
  * hdspe_ltc32_to_frames_df: Convert LTC to frames since midnight, for  
  * drop-frame 32-bit LTC. 
+ * @ltc: 32-bit ltc code to convert to frames since midnight.
  */
 static unsigned int hdspe_ltc32_to_frames_df(u32 ltc)
 {
@@ -59,6 +60,8 @@ static unsigned int hdspe_ltc32_to_frames_df(u32 ltc)
 /**
  * hdspe_ltc32_to_frames_ndf: Convert LTC to frames since midnight, 
  * for non-drop-frame 32-bit LTC. 
+ * @ltc: 32-bit LTC code to convert.
+ * @fps: LTC frames per second.
  */
 static unsigned int hdspe_ltc32_to_frames_ndf(u32 ltc, int fps)
 {

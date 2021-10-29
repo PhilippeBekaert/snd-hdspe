@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file hdspe_aes.c
+ * hdspe_aes.c
  * @brief RME HDSPe AES driver methods.
  *
  * 20210728 - Philippe.Bekaert@uhasselt.be
@@ -232,12 +232,12 @@ static enum hdspe_clock_source hdspe_aes_get_preferred_sync_ref(
 static void hdspe_aes_set_preferred_sync_ref(struct hdspe* hdspe,
 					     enum hdspe_clock_source ref)
 {
-	struct hdspe_control_reg_aes control = hdspe->reg.control.aes;
+	struct hdspe_control_reg_aes* control = &hdspe->reg.control.aes;
 	if (aes_autosync_ref[ref] == HDSPE_CLOCK_SOURCE_INTERN) ref = 0;
-	control.SyncRef3 = (ref>>3)&1;
-	control.SyncRef2 = (ref>>2)&1;
-	control.SyncRef1 = (ref>>1)&1;
-	control.SyncRef0 = (ref>>0)&1;
+	control->SyncRef3 = (ref>>3)&1;
+	control->SyncRef2 = (ref>>2)&1;
+	control->SyncRef1 = (ref>>1)&1;
+	control->SyncRef0 = (ref>>0)&1;
 	hdspe_write_control(hdspe);
 }
 

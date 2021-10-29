@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file hdspe_midi.c
+ * hdspe_midi.c
  * @brief RME HDSPe MIDI driver.
  *
  * 20210728 - Philippe.Bekaert@uhasselt.be
@@ -49,7 +49,7 @@ static inline int snd_hdspe_midi_output_possible (struct hdspe *hdspe, int id)
 		return 0;
 }
 
-void snd_hdspe_flush_midi_input(struct hdspe *hdspe, int id)
+static void snd_hdspe_flush_midi_input(struct hdspe *hdspe, int id)
 {
 	while (snd_hdspe_midi_input_available (hdspe, id))
 		snd_hdspe_midi_read_byte (hdspe, id);

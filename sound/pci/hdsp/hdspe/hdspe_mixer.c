@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file hdspe-mixer.c
+ * hdspe-mixer.c
  * @brief RME HDSPe hardware mixer status and control interface.
  *
  * 20210728 - Philippe.Bekaert@uhasselt.be
@@ -260,7 +260,7 @@ static int snd_hdspe_put_playback_mixer(struct snd_kcontrol *kcontrol,
 
 static struct snd_kcontrol_new snd_hdspe_playback_mixer = HDSPE_PLAYBACK_MIXER;
 
-int hdspe_update_simple_mixer_controls(struct hdspe * hdspe)
+static int hdspe_update_simple_mixer_controls(struct hdspe * hdspe)
 {
 	int i;
 

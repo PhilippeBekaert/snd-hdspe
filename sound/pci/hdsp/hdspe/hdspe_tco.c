@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file hdspe-tco.c
+ * hdspe-tco.c
  * @brief RME HDSPe Time Code Option driver status and control interface.
  *
- * 20210728,0812,0902,24,28,1008,13 - Philippe.Bekaert@uhasselt.be
+ * 20210728,0812,0902,24,28,1008,13,27 - Philippe.Bekaert@uhasselt.be
  *
  * Based on earlier work of the other MODULE_AUTHORS,
  * information kindly made available by RME (www.rme-audio.com),
@@ -584,10 +584,14 @@ void hdspe_tco_mtc(struct hdspe* hdspe, const u8* buf, int count)
 	}
 }
 
-void hdspe_tco_work(struct work_struct* work)
+/* Invoked at every audio interrupt */
+void hdspe_tco_period_elapsed(struct hdspe* hdspe)
 {
-	struct hdspe* hdspe = container_of(work, struct hdspe, tco_work);
 	struct hdspe_tco* c = hdspe->tco;
+
+	spin_lock(&hdspe->tco->lock);
+	/* clock by which LTC frame start is measured. */
+	c->ltc_time = hdspe->frame_count;
 
 	/* Incoming time code and offset are accurate only at this time of an
 	 * audio period interrupt, when audio interrupts are enabled.
@@ -595,10 +599,10 @@ void hdspe_tco_work(struct work_struct* work)
 	if (c->ltc_changed) {   /* time code changed */
 		s32 realfps1k;
 		struct hdspe_ltc ltc;
-		spin_lock(&hdspe->tco->lock);
 		hdspe_tco_read_ltc(hdspe, &ltc, __func__);
 
-		/* add 1 frame, correct if running forward. */
+		/* Add 1 frame, which is correct if running forward. 
+  		 * The windows driver does that too. */
 		ltc.tc = hdspe_ltc32_incr(ltc.tc, ltc.fps, ltc.df);
 
 		c->ltc_in = ltc.tc;
@@ -608,19 +612,22 @@ void hdspe_tco_work(struct work_struct* work)
 		               hdspe->cid.ltc_in);
 		c->ltc_changed = false;
 
+		/* Estimate actual LTC input "pull factor", based on the
+		 * average duration in audio frames of the past LTC_CACHE_SIZE
+		 * incoming LTC frames. Pull factor 1000 = nominal speed,
+		 * 999 = NTSC pulldown. */
 		realfps1k = c->ltc_duration_sum == 0 ? ltc.fps*1000 : 1000000000
 		     / (u32)div_u64(c->ltc_duration_sum, (LTC_CACHE_SIZE*1000));
 		c->ltc_in_pullfac = (realfps1k + ltc.fps/2) / ltc.fps;
-/*		
+/*
 		dev_dbg(hdspe->card->dev, "%s: realfps=%u/1000, setfps=%u, pull=%d\n", __func__, realfps1k, ltc.fps, c->ltc_in_pull);
-*/		
+*/
 		if (c->ltc_in_pullfac != c->last_ltc_in_pullfac)
 			snd_ctl_notify(hdspe->card, SNDRV_CTL_EVENT_MASK_VALUE,
 				       hdspe->cid.ltc_in_pullfac);
 		c->last_ltc_in_pullfac = c->ltc_in_pullfac;
-		
-		spin_unlock(&hdspe->tco->lock);
 	}
+	spin_unlock(&hdspe->tco->lock);
 
 	if (c->ltc_set) {
 		/* Output time code set at the previous audio interrupt
@@ -638,7 +645,8 @@ void hdspe_tco_work(struct work_struct* work)
 		spin_unlock(&hdspe->tco->lock);
 		/* Output time code is picked up by the hardware at the next 
 		 * audio period interrupt. 
-		 * c->ltc_set is true at this point. ltc_out is reset to 0. */
+		 * c->ltc_set is true at this point. 
+		 * ltc_out is reset to 0xffffffff. */
 	}
 }
 
@@ -1008,9 +1016,10 @@ static int snd_hdspe_get_ltc_in(struct snd_kcontrol *kcontrol,
 				struct snd_ctl_elem_value *ucontrol)
 {
 	struct hdspe *hdspe = snd_kcontrol_chip(kcontrol);
+	
 	u32 ltc = hdspe->tco->ltc_in;
 	u64 tc;
-
+	
 	spin_lock_irq(&hdspe->tco->lock);
 	//	dev_dbg(hdspe->card->dev, "%s ...\n", __func__);
 	/* The TCO module reports no user bits. They will be 0. */
@@ -1027,6 +1036,24 @@ static int snd_hdspe_get_ltc_in(struct snd_kcontrol *kcontrol,
 	ucontrol->value.integer64.value[1] = hdspe->tco->ltc_in_frame_count;
 	spin_unlock_irq(&hdspe->tco->lock);
 
+	return 0;
+}
+
+static int snd_hdspe_info_ltc_time(struct snd_kcontrol* kcontrol,
+				  struct snd_ctl_elem_info *uinfo)
+{
+	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER64;
+	uinfo->count = 1;
+	return 0;
+}
+
+static int snd_hdspe_get_ltc_time(struct snd_kcontrol *kcontrol,
+				  struct snd_ctl_elem_value *ucontrol)
+{
+	struct hdspe *hdspe = snd_kcontrol_chip(kcontrol);	
+	spin_lock_irq(&hdspe->tco->lock);
+	ucontrol->value.integer64.value[0] = hdspe->tco->ltc_time;
+	spin_unlock_irq(&hdspe->tco->lock);
 	return 0;
 }
 
@@ -1061,14 +1088,14 @@ static int snd_hdspe_put_ltc_out(struct snd_kcontrol *kcontrol,
 
 /* Control elements for the optional TCO module */
 static const struct snd_kcontrol_new snd_hdspe_controls_tco[] = {
-	HDSPE_RW_KCTL(CARD, "TCO Sample Rate", sample_rate),
+	HDSPE_RW_KCTL(CARD, "LTC Sample Rate", sample_rate),
 	HDSPE_RW_KCTL(CARD, "TCO Pull", pull),
 	HDSPE_RW_KCTL(CARD, "TCO WCK Conversion", wck_conversion),
-	HDSPE_RW_KCTL(CARD, "TCO Frame Rate", frame_rate),
+	HDSPE_RW_KCTL(CARD, "LTC Frame Rate", frame_rate),
 	HDSPE_RW_KCTL(CARD, "TCO Sync Source", sync_source),
 	HDSPE_RW_BOOL_KCTL(CARD, "TCO Word Term", word_term),
-/*	HDSPE_RW_BOOL_KCTL(CARD, "LTC Flywheel", ltc_flywheel), */
-	HDSPE_WO_KCTL(CARD, "LTC Out", ltc_out)
+	HDSPE_WO_KCTL(CARD, "LTC Out", ltc_out),
+	HDSPE_RV_KCTL(CARD, "LTC Time", ltc_time)
 };
 
 #define CHECK_STATUS_CHANGE(prop)				 \

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file hdspe_proc.c
+ * hdspe_proc.c
  * @brief RME HDSPe driver proc interface.
  *
  * 20210728 - Philippe.Bekaert@uhasselt.be

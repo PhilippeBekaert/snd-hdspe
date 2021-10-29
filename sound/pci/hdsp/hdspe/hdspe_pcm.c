@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 /**
- * @file hdspe_pcm.c
+ * hdspe_pcm.c
  * @brief RME HDSPe PCM interface.
  *
  * 20210728 - Philippe.Bekaert@uhasselt.be
@@ -103,7 +103,7 @@ snd_pcm_uframes_t hdspe_hw_pointer(struct hdspe *hdspe)
 #endif /*OLDSTUFF*/	
 }
 
-u32 hdspe_hw_buffer_size(struct hdspe* hdspe)
+static u32 hdspe_hw_buffer_size(struct hdspe* hdspe)
 {
 	return (1<<16) / 4;   /* 16-bit pointer (only 10 msb in status reg),
 			       * 4 bytes per sample */
@@ -137,7 +137,7 @@ u32 hdspe_period_size(struct hdspe *hdspe)
 	return 1 << (n + 6);
 }
 
-int hdspe_set_interrupt_interval(struct hdspe *hdspe, unsigned int frames)
+static int hdspe_set_interrupt_interval(struct hdspe *hdspe, unsigned int frames)
 {
 	int n;
 
@@ -184,7 +184,10 @@ int hdspe_set_interrupt_interval(struct hdspe *hdspe, unsigned int frames)
  * 16K frames, so about 3 times a second at 48 KHz sampling rate. */
 void hdspe_update_frame_count(struct hdspe* hdspe)
 {
-	u32 hw_pointer = hdspe_hw_pointer(hdspe);
+	u32 hw_pointer;
+
+	spin_lock(&hdspe->lock);
+	hw_pointer = hdspe_hw_pointer(hdspe);
 	if (hw_pointer < hdspe->last_hw_pointer)
 		hdspe->hw_pointer_wrap_count ++;
 	hdspe->last_hw_pointer = hw_pointer;
@@ -192,7 +195,8 @@ void hdspe_update_frame_count(struct hdspe* hdspe)
 	hdspe->frame_count =
 		(u64)hdspe->hw_pointer_wrap_count * hdspe_hw_buffer_size(hdspe)
 		+ (hw_pointer & ~(hdspe_period_size(hdspe) - 1));
-
+	spin_unlock(&hdspe->lock);
+	
 #ifdef NEVER
 	{
 		static u64 last_frame_count =0;
