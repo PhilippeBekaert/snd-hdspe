@@ -15,7 +15,7 @@ On ubuntu:
 
        make 
      
-This builds the snd-hdspe.ko kernel driver in the sound/pci/hdsp/hdspe subdirectoy.
+This builds the snd-hdspe.ko kernel driver in the sound/pci/hdsp/hdspe subdirectory.
 
 - Manually installing the snd-hdspe.ko driver: If installed, remove the snd-hdspm.ko driver (the old driver for RME HDSPe cards) first:
 
