@@ -81,13 +81,13 @@ TCO elements
 
 | Interface | Name | Access | Value Type | Description |
 | :- | :- | :- | :- | :- |
-| CARD | LTC In | RV | Int64 | Incoming LTC code - see below **LTC controls** | 
+| CARD | LTC In | RV | Int64 | Incoming LTC code - see below **LTC control** | 
 | CARD | LTC In Drop Frame | RV | Bool | Whether incoming LTC is drop frame format or not | 
 | CARD | LTC In Frame Rate | RV | Enum | Incoming LTC frame rate: 24, 25 or 30 fps | 
 | CARD | LTC In Pull Factor | RV | Int | Incoming LTC actual frame rate deviation from standard | 
 | CARD | LTC In Valid | RV | Bool | Whether or not valid LTC input is detected | 
-| CARD | LTC Out | W | Int64 | LTC output control - see below **LTC controls** |
-| CARD | LTC Time | RV | Int64 | Current periods end LTC time - see below **LTC controls** | 
+| CARD | LTC Out | W | Int64 | LTC output control - see below **LTC control** |
+| CARD | LTC Time | RV | Int64 | Current periods end LTC time - see below **LTC control** | 
 | CARD | LTC Run | RW | Bool | Pauze / restart LTC output | 
 | CARD | LTC Frame Rate | RW | Enum | TCO LTC engine frame rate: 24, 25, 29.97, 29.97 DF or 30 fps | 
 | CARD | LTC Sample Rate | RW | Enum | TCO LTC engine audio sample rate: 44.1 KHz, 48 KHz, **From App** | 
