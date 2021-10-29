@@ -8,7 +8,10 @@ As usual
 stores the actual ALSA control elements with all metadata and exact enumeration values 
 in the file name asound.state.
 
-See [hdspeconf](https://github.com/PhilippeBekaert/hdspeconf) for an example application showing how to use these elements.
+See [hdspeconf](https://github.com/PhilippeBekaert/hdspeconf) for an example application using (and showing how to use) these elements.
+
+The controls correspond for most part with the similarly named controls in the Windows and MAC OSX control applications provided by RME.
+See the RME HDSPe sound card user guides for more information on these controls.
 
 Elements common to all supported cards
 --------------------------------------
