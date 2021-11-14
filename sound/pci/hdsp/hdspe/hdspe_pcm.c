@@ -41,7 +41,7 @@ static int snd_hdspe_preallocate_memory(struct hdspe *hdspe)
 	pcm = hdspe->pcm;
 
 	wanted = HDSPE_DMA_AREA_BYTES;
-	// TODO: set 32-bit DMA mask
+	/* TODO: set 32-bit DMA mask */
 
 	snd_pcm_lib_preallocate_pages_for_all(pcm, SNDRV_DMA_TYPE_DEV_SG,
 					      &hdspe->pci->dev,
@@ -54,13 +54,22 @@ static int snd_hdspe_preallocate_memory(struct hdspe *hdspe)
 /* Each channel got 16 4K pages allocated for DMA transfers. */
 static void hdspe_set_channel_dma_addr(struct hdspe *hdspe,
 				       struct snd_pcm_substream *substream,
-				       unsigned int reg, int channel)
+				       unsigned int reg,
+				       int dma_channel, int logical_channel)
 {
 	int i;
-
-	for (i = channel * 16; i < channel * 16 + 16; i++)
+#ifdef OLDSTUFF
+	for (i = dma_channel * 16; i < dma_channel * 16 + 16; i++) {
 		hdspe_write(hdspe, reg + 4 * i,
 			    snd_pcm_sgbuf_get_addr(substream, 4096 * i));
+	}
+#endif /*OLDSTUFF*/
+	for (i = 0; i < 16; i++) {
+		int c = dma_channel * 16 + i;
+		int n = logical_channel * 16 + i;
+		hdspe_write(hdspe, reg + 4 * c,
+			    snd_pcm_sgbuf_get_addr(substream, 4096 * n));
+	}
 }
 
 /* enable DMA for specific channels, now available for DSP-MADI */
@@ -385,7 +394,7 @@ static int snd_hdspe_hw_params(struct snd_pcm_substream *substream,
 				continue;      /* just make sure */
 			hdspe_set_channel_dma_addr(hdspe, substream,
 						   HDSPE_pageAddressBufferOut,
-						   c);
+						   c, i);
 			snd_hdspe_enable_out(hdspe, c, 1);
 		}
 
@@ -402,7 +411,7 @@ static int snd_hdspe_hw_params(struct snd_pcm_substream *substream,
 				continue;
 			hdspe_set_channel_dma_addr(hdspe, substream,
 						   HDSPE_pageAddressBufferIn,
-						   c);
+						   c, i);
 			snd_hdspe_enable_in(hdspe, c, 1);
 		}
 
@@ -482,9 +491,7 @@ static int snd_hdspe_channel_info(struct snd_pcm_substream *substream,
 				 channel);
 			return -EINVAL;
 		}
-
-		info->offset = hdspe->channel_map_out[channel] *
-			HDSPE_CHANNEL_BUFFER_BYTES;
+		info->offset = channel * HDSPE_CHANNEL_BUFFER_BYTES;
 	} else {
 		if (snd_BUG_ON(channel >= hdspe->max_channels_in)) {
 			dev_info(hdspe->card->dev,
@@ -500,9 +507,7 @@ static int snd_hdspe_channel_info(struct snd_pcm_substream *substream,
 				 channel);
 			return -EINVAL;
 		}
-
-		info->offset = hdspe->channel_map_in[channel] *
-			HDSPE_CHANNEL_BUFFER_BYTES;
+		info->offset = channel * HDSPE_CHANNEL_BUFFER_BYTES;
 	}
 
 	info->first = 0;
@@ -938,6 +943,7 @@ static const struct snd_pcm_ops snd_hdspe_ops = {
 	.prepare = snd_hdspe_prepare,
 	.trigger = snd_hdspe_trigger,
 	.pointer = snd_hdspe_hw_pointer,
+	/* TODO: .get_time_info = snd_hdspe_get_time_info */
 };
 
 int snd_hdspe_create_pcm(struct snd_card *card,

@@ -1090,10 +1090,10 @@ static int snd_hdspe_put_ltc_out(struct snd_kcontrol *kcontrol,
 static const struct snd_kcontrol_new snd_hdspe_controls_tco[] = {
 	HDSPE_RW_KCTL(CARD, "LTC Sample Rate", sample_rate),
 	HDSPE_RW_KCTL(CARD, "TCO Pull", pull),
-	HDSPE_RW_KCTL(CARD, "TCO WCK Conversion", wck_conversion),
+	HDSPE_RW_KCTL(CARD, "TCO WordClk Conversion", wck_conversion),
 	HDSPE_RW_KCTL(CARD, "LTC Frame Rate", frame_rate),
 	HDSPE_RW_KCTL(CARD, "TCO Sync Source", sync_source),
-	HDSPE_RW_BOOL_KCTL(CARD, "TCO Word Term", word_term),
+	HDSPE_RW_BOOL_KCTL(CARD, "TCO WordClk Term", word_term),
 	HDSPE_WO_KCTL(CARD, "LTC Out", ltc_out),
 	HDSPE_RV_KCTL(CARD, "LTC Time", ltc_time)
 };

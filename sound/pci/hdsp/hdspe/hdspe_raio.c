@@ -274,7 +274,10 @@ static const char channel_map_aio_in_ds[HDSPE_MAX_CHANNELS] = {
 	0, 1,			/* line in */
 	8, 9,			/* aes in */
 	10, 11,			/* spdif in */
+#ifdef OLDSTUFF	
 	12, 14, 16, 18,		/* adat in */
+#endif /*OLDSTUFF*/
+	12, 13, 14, 15,         /* adat in */
 	2, 3, 4, 5,		/* AEB */
 	-1, -1,
 	-1, -1, -1, -1, -1, -1, -1, -1,
@@ -289,7 +292,10 @@ static const char channel_map_aio_out_ds[HDSPE_MAX_CHANNELS] = {
 	0, 1,			/* line out */
 	8, 9,			/* aes out */
 	10, 11,			/* spdif out */
+#ifdef OLDSTUFF	
 	12, 14, 16, 18,		/* adat out */
+#endif /*OLDSTUFF*/
+	12, 13, 14, 15,         /* adat out */
 	6, 7,			/* phone out */
 	2, 3, 4, 5,		/* AEB */
 	-1, -1, -1, -1, -1, -1, -1, -1,
@@ -304,7 +310,10 @@ static const char channel_map_aio_in_qs[HDSPE_MAX_CHANNELS] = {
 	0, 1,			/* line in */
 	8, 9,			/* aes in */
 	10, 11,			/* spdif in */
+#ifdef OLDSTUFF	
 	12, 16,			/* adat in */
+#endif /*OLDSTUFF*/
+	12, 13,			/* adat in */
 	2, 3, 4, 5,		/* AEB */
 	-1, -1, -1, -1,
 	-1, -1, -1, -1, -1, -1, -1, -1,
@@ -319,7 +328,10 @@ static const char channel_map_aio_out_qs[HDSPE_MAX_CHANNELS] = {
 	0, 1,			/* line out */
 	8, 9,			/* aes out */
 	10, 11,			/* spdif out */
+#ifdef OLDSTUFF	
 	12, 16,			/* adat out */
+#endif /*OLDSTUFF*/
+	12, 13,			/* adat out */	
 	6, 7,			/* phone out */
 	2, 3, 4, 5,		/* AEB */
 	-1, -1,
