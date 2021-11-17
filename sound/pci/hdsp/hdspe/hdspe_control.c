@@ -607,21 +607,31 @@ HDSPE_RW_ENUM_REG_METHODS(aio_spdif_in, settings, raio, Input, false)
 
 /* --------------------- AIO AD / DA / Phones level ----------------- */
 
-static int snd_hdspe_info_aio_level(struct snd_kcontrol *kcontrol,
+static int snd_hdspe_info_aio_input_level(struct snd_kcontrol *kcontrol,
 				    struct snd_ctl_elem_info *uinfo)
 {
 	static const char *const texts[HDSPE_AIO_LEVEL_COUNT] = {
-		HDSPE_AIO_LEVEL_NAME(0),
-		HDSPE_AIO_LEVEL_NAME(1),
-		HDSPE_AIO_LEVEL_NAME(2)
+		"Lo Gain",
+		"+4 dBu",
+		"-10 dBV"
 	};
 	ENUMERATED_CTL_INFO(uinfo, texts);
 	return 0;
 }
 
-#define snd_hdspe_info_aio_input_level snd_hdspe_info_aio_level
-#define snd_hdspe_info_aio_output_level snd_hdspe_info_aio_level
-#define snd_hdspe_info_aio_phones_level snd_hdspe_info_aio_level
+static int snd_hdspe_info_aio_out_level(struct snd_kcontrol *kcontrol,
+				    struct snd_ctl_elem_info *uinfo)
+{
+	static const char *const texts[HDSPE_AIO_LEVEL_COUNT] = {
+		"Hi Gain",
+		"+4 dBu",
+		"-10 dBV"
+	};
+	ENUMERATED_CTL_INFO(uinfo, texts);
+	return 0;
+}
+#define snd_hdspe_info_aio_output_level snd_hdspe_info_aio_out_level
+#define snd_hdspe_info_aio_phones_level snd_hdspe_info_aio_out_level
 
 HDSPE_RW_ENUM_REG_METHODS(aio_input_level, settings, raio, AD_GAIN, false)
 HDSPE_RW_ENUM_REG_METHODS(aio_output_level, settings, raio, DA_GAIN, false)
