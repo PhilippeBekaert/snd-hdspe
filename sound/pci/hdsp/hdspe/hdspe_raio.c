@@ -3,7 +3,7 @@
  * hdspe_raio.c
  * @brief RME HDSPe RayDAT / AIO / AIO Pro driver methods.
  *
- * 20210728 - Philippe.Bekaert@uhasselt.be
+ * 20210728 ... 1117 - Philippe.Bekaert@uhasselt.be
  *
  * Based on earlier work of the other MODULE_AUTHORS,
  * information kindly made available by RME (www.rme-audio.com),
@@ -176,7 +176,7 @@ static const char * const texts_ports_aio_in_qs[] = {
 	"Analog.L", "Analog.R",
 	"AES.L", "AES.R",
 	"SPDIF.L", "SPDIF.R",
-	"ADAT.1", "ADAT.2", "ADAT.3", "ADAT.4",
+	"ADAT.1", "ADAT.2",
 	"AEB.1", "AEB.2", "AEB.3", "AEB.4"
 };
 
@@ -184,7 +184,7 @@ static const char * const texts_ports_aio_out_qs[] = {
 	"Analog.L", "Analog.R",
 	"AES.L", "AES.R",
 	"SPDIF.L", "SPDIF.R",
-	"ADAT.1", "ADAT.2", "ADAT.3", "ADAT.4",
+	"ADAT.1", "ADAT.2",
 	"Phone.L", "Phone.R",
 	"AEB.1", "AEB.2", "AEB.3", "AEB.4"
 };
@@ -274,9 +274,6 @@ static const char channel_map_aio_in_ds[HDSPE_MAX_CHANNELS] = {
 	0, 1,			/* line in */
 	8, 9,			/* aes in */
 	10, 11,			/* spdif in */
-#ifdef OLDSTUFF	
-	12, 14, 16, 18,		/* adat in */
-#endif /*OLDSTUFF*/
 	12, 13, 14, 15,         /* adat in */
 	2, 3, 4, 5,		/* AEB */
 	-1, -1,
@@ -292,9 +289,6 @@ static const char channel_map_aio_out_ds[HDSPE_MAX_CHANNELS] = {
 	0, 1,			/* line out */
 	8, 9,			/* aes out */
 	10, 11,			/* spdif out */
-#ifdef OLDSTUFF	
-	12, 14, 16, 18,		/* adat out */
-#endif /*OLDSTUFF*/
 	12, 13, 14, 15,         /* adat out */
 	6, 7,			/* phone out */
 	2, 3, 4, 5,		/* AEB */
@@ -310,9 +304,6 @@ static const char channel_map_aio_in_qs[HDSPE_MAX_CHANNELS] = {
 	0, 1,			/* line in */
 	8, 9,			/* aes in */
 	10, 11,			/* spdif in */
-#ifdef OLDSTUFF	
-	12, 16,			/* adat in */
-#endif /*OLDSTUFF*/
 	12, 13,			/* adat in */
 	2, 3, 4, 5,		/* AEB */
 	-1, -1, -1, -1,
@@ -328,9 +319,6 @@ static const char channel_map_aio_out_qs[HDSPE_MAX_CHANNELS] = {
 	0, 1,			/* line out */
 	8, 9,			/* aes out */
 	10, 11,			/* spdif out */
-#ifdef OLDSTUFF	
-	12, 16,			/* adat out */
-#endif /*OLDSTUFF*/
 	12, 13,			/* adat out */	
 	6, 7,			/* phone out */
 	2, 3, 4, 5,		/* AEB */
@@ -745,6 +733,7 @@ static enum hdspe_freq hdspe_raio_get_external_freq(struct hdspe* hdspe)
 static void hdspe_raio_proc_read(struct snd_info_entry *entry,
 				 struct snd_info_buffer *buffer)
 {
+	int i;
 	struct hdspe *hdspe = entry->private_data;
 	struct hdspe_status s;
 
@@ -798,7 +787,6 @@ static void hdspe_raio_proc_read(struct snd_info_entry *entry,
 		  raio_settings_bitNames);
 
 	{
-		union hdspe_status0_reg status0 = hdspe_read_status0(hdspe);
 		union hdspe_status1_reg status1 = hdspe_read_status1(hdspe);
 		union hdspe_status2_reg status2 = hdspe_read_status2(hdspe);
 		u32 fbits = hdspe_read_fbits(hdspe);
@@ -808,12 +796,32 @@ static void hdspe_raio_proc_read(struct snd_info_entry *entry,
 		IPRINTREG(buffer, "STATUS2", status2.raw,
 			  raio_status2_bitNames);
 		hdspe_iprint_fbits(buffer, "FBITS", fbits);
+	}
 
+	{
+		union hdspe_status0_reg status0 = hdspe_read_status0(hdspe);
 		snd_iprintf(buffer, "\n");
 		snd_iprintf(buffer, "BUF_PTR\t: %05d\nBUF_ID\t: %d\n",
 			    le16_to_cpu(status0.common.BUF_PTR)<<6,
 			    status0.common.BUF_ID);
 		snd_iprintf(buffer, "LAT\t: %d\n", hdspe->reg.control.common.LAT);
+	}
+	
+	snd_iprintf(buffer, "\n");
+	snd_iprintf(buffer, "Running     \t: %d\n", hdspe->running);
+	snd_iprintf(buffer, "Capture PID \t: %d\n", hdspe->capture_pid);
+	snd_iprintf(buffer, "Playback PID\t: %d\n", hdspe->playback_pid);
+	
+	snd_iprintf(buffer, "\n");
+	snd_iprintf(buffer, "Capture channel mapping:\n");
+	for (i = 0 ; i < hdspe->max_channels_in; i ++) {
+		snd_iprintf(buffer, "Logical %d DMA %d '%s'\n",
+			    i, hdspe->channel_map_in[i], hdspe->port_names_in[i]);
+	}
+	snd_iprintf(buffer, "\nPlayback channel mapping:\n");
+	for (i = 0 ; i < hdspe->max_channels_out; i ++) {
+		snd_iprintf(buffer, "Logical %d DMA %d '%s'\n",
+			    i, hdspe->channel_map_out[i], hdspe->port_names_out[i]);
 	}
 }
 

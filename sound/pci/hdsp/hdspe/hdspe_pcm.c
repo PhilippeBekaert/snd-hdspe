@@ -50,25 +50,23 @@ static int snd_hdspe_preallocate_memory(struct hdspe *hdspe)
 	return 0;
 }
 
-/* Inform the card what DMA addresses to use for the indicated channel. */
-/* Each channel got 16 4K pages allocated for DMA transfers. */
+/* Inform the card what DMA addresses to use for the indicated channel.
+ * Each channel got 16 4K pages allocated for DMA transfers. We map the
+ * channels the same way for all speeds: DMA channel 0 at the start
+ * of the buffer, DMA channel 1 next, a.s.o. Audio data for some logical
+ * channels (e.g. ADAT) may appear in different DMA channels, depending
+ * on speed mode. We catch that by setting the buffer offsets for each
+ * logical channel appropriately, depending on current speed mode, in
+ * snd_hdspe_channel_info(). */
 static void hdspe_set_channel_dma_addr(struct hdspe *hdspe,
 				       struct snd_pcm_substream *substream,
 				       unsigned int reg,
-				       int dma_channel, int logical_channel)
+				       int channel)
 {
 	int i;
-#ifdef OLDSTUFF
-	for (i = dma_channel * 16; i < dma_channel * 16 + 16; i++) {
+	for (i = channel * 16; i < channel * 16 + 16; i++) {
 		hdspe_write(hdspe, reg + 4 * i,
 			    snd_pcm_sgbuf_get_addr(substream, 4096 * i));
-	}
-#endif /*OLDSTUFF*/
-	for (i = 0; i < 16; i++) {
-		int c = dma_channel * 16 + i;
-		int n = logical_channel * 16 + i;
-		hdspe_write(hdspe, reg + 4 * c,
-			    snd_pcm_sgbuf_get_addr(substream, 4096 * n));
 	}
 }
 
@@ -386,7 +384,7 @@ static int snd_hdspe_hw_params(struct snd_pcm_substream *substream,
 	}
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
-
+		/* Enable only the required DMA channels. */
 		for (i = 0; i < params_channels(params); ++i) {
 			int c = hdspe->channel_map_out[i];
 
@@ -394,7 +392,7 @@ static int snd_hdspe_hw_params(struct snd_pcm_substream *substream,
 				continue;      /* just make sure */
 			hdspe_set_channel_dma_addr(hdspe, substream,
 						   HDSPE_pageAddressBufferOut,
-						   c, i);
+						   c);
 			snd_hdspe_enable_out(hdspe, c, 1);
 		}
 
@@ -411,7 +409,7 @@ static int snd_hdspe_hw_params(struct snd_pcm_substream *substream,
 				continue;
 			hdspe_set_channel_dma_addr(hdspe, substream,
 						   HDSPE_pageAddressBufferIn,
-						   c, i);
+						   c);
 			snd_hdspe_enable_in(hdspe, c, 1);
 		}
 
@@ -469,7 +467,6 @@ static int snd_hdspe_hw_free(struct snd_pcm_substream *substream)
 	return 0;
 }
 
-
 static int snd_hdspe_channel_info(struct snd_pcm_substream *substream,
 		struct snd_pcm_channel_info *info)
 {
@@ -491,7 +488,8 @@ static int snd_hdspe_channel_info(struct snd_pcm_substream *substream,
 				 channel);
 			return -EINVAL;
 		}
-		info->offset = channel * HDSPE_CHANNEL_BUFFER_BYTES;
+		info->offset = hdspe->channel_map_out[channel]
+			* HDSPE_CHANNEL_BUFFER_BYTES;
 	} else {
 		if (snd_BUG_ON(channel >= hdspe->max_channels_in)) {
 			dev_info(hdspe->card->dev,
@@ -507,7 +505,8 @@ static int snd_hdspe_channel_info(struct snd_pcm_substream *substream,
 				 channel);
 			return -EINVAL;
 		}
-		info->offset = channel * HDSPE_CHANNEL_BUFFER_BYTES;
+		info->offset = hdspe->channel_map_in[channel]
+			* HDSPE_CHANNEL_BUFFER_BYTES;
 	}
 
 	info->first = 0;
