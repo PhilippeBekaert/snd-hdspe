@@ -192,3 +192,21 @@ Full scale PCM input data for analog input coresponds to +4, +13, +19 or +24 dBu
 
 Full scale PCM output data for analog output corresponds to +4, +13, +19 or +24 dBu level if outputting balanced audio (using the XLR breakout
 cable), or -2, +4, +13 or +19 dBu level if outputting unbalanced audio (using the RCA breakout cable).
+
+
+AIO controls
+------------
+
+| Interface | Name | Access | Value Type | Description |
+| :- | :- | :- | :- | :- |
+| CARD | Input Level | RW | Enum | Analog audio input reference level: -10 dBV, +4 dBu (with 9dB headroom), Lo Gain (15 dB headroom) | 
+| CARD | Output Level | RW | Enum | Analog audio output reference level: -10 dBV, +4 dBu (with 9dB headroom), Hi Gain (15 dB headroom) | 
+| CARD | XLR Breakout Cable | RW | Enum | Analog output breakout cable: XLR or RCA. -6 dB gain correction on XLR for correct reference level |
+| CARD | Phones Level | RW | Enum | Headphones output level: same options as Output Level | 
+| CARD | S/PDIF In | RW | Enum | S/PDIF input connector: coaxial, optical or internal | 
+| CARD | S/PDIF Out Optical | RW | Bool | Output S/PDIF over TOSLINK | 
+| CARD | S/PDIF Out Professional | RW | Bool | Output professional mode S/PDIF | 
+| CARD | ADAT Internal | RW | Bool | Use the internal connector for ADAT | 
+| CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
+| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
+
