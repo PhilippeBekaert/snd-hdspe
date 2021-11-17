@@ -492,7 +492,7 @@ static int snd_hdspe_create(struct hdspe *hdspe)
 		snprintf(card->shortname, sizeof(card->shortname), "%s_%08d",
 			hdspe->card_name, hdspe->serial);
 		snprintf(card->longname, sizeof(card->longname),
-			 "%s S/N %08d at 0x%lx, irq %d",
+			 "%s S/N %08d at 0x%lx irq %d",
 			 hdspe->card_name, hdspe->serial,
 			 hdspe->port, hdspe->irq);
 	} else {
@@ -500,7 +500,7 @@ static int snd_hdspe_create(struct hdspe *hdspe)
 		snprintf(card->shortname, sizeof(card->shortname), "%s",
 			 hdspe->card_name);
 		snprintf(card->longname, sizeof(card->longname),
-			 "%s at 0x%lx, irq %d",
+			 "%s at 0x%lx irq %d",
 			 hdspe->card_name, hdspe->port, hdspe->irq);
 	}
 	

@@ -86,7 +86,7 @@ void hdspe_proc_read_common(struct snd_info_buffer *buffer,
 		    hdspe_freq_name(s->external_freq));
 	for (i=0; i<HDSPE_CLOCK_SOURCE_COUNT; i++) {
 		if (s->sync[i] != HDSPE_SYNC_STATUS_NOT_AVAILABLE)
-			snd_iprintf(buffer, "Sync source %2d %-8s\t: freq %d %-8s, sync %d %-8s %s\n",
+			snd_iprintf(buffer, "Sync source %2d %-8s\t: freq %d %-9s, sync %d %-9s %s\n",
 				    i,
 				    hdspe_clock_source_name(hdspe, i),
 				    s->freq[i],

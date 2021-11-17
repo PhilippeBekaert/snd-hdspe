@@ -760,7 +760,7 @@ static void hdspe_raio_proc_read(struct snd_info_entry *entry,
 		snd_iprintf(buffer, "Phones Level\t\t: %d %s\n",
 			    s.raio.aio.phones_level,
 			    HDSPE_AIO_LEVEL_NAME(s.raio.aio.phones_level));
-		snd_iprintf(buffer, "XLR\t\t: %d %s\n",
+		snd_iprintf(buffer, "XLR         \t\t: %d %s\n",
 			    s.raio.aio.xlr,
 			    HDSPE_BOOL_NAME(s.raio.aio.xlr));
 	}
