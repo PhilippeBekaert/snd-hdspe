@@ -73,6 +73,11 @@ assists module signing for secure boot.
 - For uninstalling, type
 
         sudo dkms remove alsa-hdspe/0.0
+        
+- You may need to blacklist the stock snd-hdspm driver. Create a file /usr/lib/modprobe.d/hdspe.conf with the following content:
+
+        blacklist snd-hdspm
+      
 
 **Supported hardware**
 
@@ -87,8 +92,8 @@ assists module signing for secure boot.
 
 **Status**
 
-At this time (October, 15 2021), the driver is early work in progress.
-- AIO Pro and TCO support is pretty complete and lab-tested.
+At this time (November, 17 2021), the driver is early work in progress.
+- AIO, AIO Pro and TCO support is pretty complete and lab-tested.
 - MADI/AES/RayDAT card support is to be completed and tested.
 - It is developed on ubuntu studio 20.04 and has only been tested on that distribution so far.
 
@@ -106,4 +111,4 @@ See [LICENSE](https://github.com/PhilippeBekaert/snd-hdspe/blob/main/LICENSE).
 
 **Author**
 
-[Philippe Bekaert](mailto:linux@panokkel.be), October 2021.
+[Philippe Bekaert](mailto:linux@panokkel.be), November 2021.
