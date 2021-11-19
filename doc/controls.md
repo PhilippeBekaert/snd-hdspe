@@ -14,6 +14,14 @@ The controls correspond for most part with the similarly named controls in the W
 See the RME HDSPe sound card user guides, and [hdspeconf](https://github.com/PhilippeBekaert/hdspeconf) documentation
 for more information on these controls.
 
+**Acces modes**:
+
+The access values in the tables below are a combination of the following symbols:
+
+| R | Read |
+| W | Write |
+| V | Volative |
+
 Controls common to all supported cards
 --------------------------------------
 
