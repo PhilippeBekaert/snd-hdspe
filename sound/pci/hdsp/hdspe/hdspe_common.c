@@ -256,7 +256,7 @@ static u32 hdspe_ppm2dds(struct hdspe* hdspe, int ppm)
 	u64 refdds = div_u64(fconst, refrate);
 	u64 refddsM = 1000000ULL * refdds;
 	snd_BUG_ON(ppm == 0);
-	return ppm != 0 ? (u32)div_u64(refddsM, ppm /*pitch*/) : refdds;
+	return ppm != 0 ? (u32)div_u64(refddsM, ppm) : refdds;
 }
 
 /* Convert DDS value to sample rate, taking into account the current speed
@@ -266,7 +266,7 @@ static u32 hdspe_dds_sample_rate(struct hdspe* hdspe, u32 dds)
 	struct hdspe_control_reg_common control = hdspe->reg.control.common;
 	u64 fconst = freq_const[hdspe->io_type] *
 		(control.qs ? 4 : control.ds ? 2 : 1);
-	snd_BUG_ON(dds == 0);
+	/*	snd_BUG_ON(dds == 0); not a bug here, but need to catch it */
 	return dds != 0 ? (u32)div_u64(fconst, dds)
 	  : hdspe_freq_sample_rate(control.freq);
 }
@@ -306,7 +306,8 @@ int hdspe_write_dds(struct hdspe* hdspe, u32 dds)
 
 done:
 	dev_dbg(hdspe->card->dev, "%s() dds = %u sample_rate = %u rc = %d.\n",
-		__func__, dds, hdspe_dds_sample_rate(hdspe, dds), rc);
+		__func__, dds,
+		dds!=0 ? hdspe_dds_sample_rate(hdspe, dds) : -1, rc);
 	return rc;
 }
 
@@ -417,15 +418,11 @@ int hdspe_set_sample_rate(struct hdspe * hdspe, u32 desired_rate)
 	int changed;
 	enum hdspe_speed desired_speed_mode =
 		hdspe_sample_rate_speed_mode(desired_rate);
-#ifdef NEVER	
-	enum hdspe_speed current_speed_mode =
-		hdspe_speed_mode(hdspe);
-#endif /*NEVER*/
 
 	dev_dbg(hdspe->card->dev, "%s(%d)\n", __func__, desired_rate);
 
 #ifdef NEVER
-	// locks up ubuntu desktop if we do that here.
+	/* locks up ubuntu desktop if we do that here. */
 	if (!snd_hdspe_use_is_exclusive(hdspe)) {
 		dev_warn(hdspe->card->dev, "Cannot change sample rate: no exclusive use.\n");
 		return -EBUSY;
@@ -433,19 +430,8 @@ int hdspe_set_sample_rate(struct hdspe * hdspe, u32 desired_rate)
 #endif /*NEVER*/
 
 #ifdef NEVER
-	// TODO: cannot change base frequency unless we're master.
-	bool master_mode = false;
-	if (!hdspe_master_bit_set(hdspe)) {
-		enum hdspe_freq external_freq = hdspe_autosync_freq(hdspe);
-		if (external_freq == HDSPE_FREQ_NO_LOCK)
-			master_mode = true;
-	}
-
-	if (!master_mode) {
-	}
-#endif /*NEVER*/
-
-#ifdef NEVER	
+	/* This prevents sample rate changes also in cases where they
+	 * are perfectly fine. */
 	if (desired_speed_mode != current_speed_mode) {
 		if (hdspe->capture_pid >= 0 || hdspe->playback_pid >= 0) {
 			dev_err(hdspe->card->dev,
@@ -461,7 +447,7 @@ int hdspe_set_sample_rate(struct hdspe * hdspe, u32 desired_rate)
 
 	changed = hdspe_write_system_sample_rate(hdspe, desired_rate);
 
-	if (changed)
+	/*	if (changed) */
 		hdspe_set_channel_map(hdspe, desired_speed_mode);
 
 	if (changed) {

@@ -10,6 +10,9 @@
  * and hardware kindly made available by Amptec Belgium (www.amptec.be).
  */
 
+/* TODO: remove in production version */
+#define DEBUG
+#define CONFIG_SND_DEBUG
 
 #ifndef __SOUND_HDSPE_CORE_H
 #define __SOUND_HDSPE_CORE_H
@@ -345,12 +348,12 @@ struct hdspe_settings_reg_raio { __le32
 	Madi_64_Channels  : 1,    // win , mac unused
 	Madi_AutoInput : 1,       // win , mac unused
 	Input     : 2,  // SPDIF in: 0=Optical, 1=Coaxial, 2=Internal
-	Spdif_Opt : 1,  // SPDIF Optical out
-	Pro       : 1,  // SPDIF Professional format
+	Spdif_Opt : 1,  // SPDIF Optical out (ADAT4 optical out on RayDAT)
+	Pro       : 1,  // SPDIF Professional format out
 
 	clr_tms   : 1,  // Clear AES/SPDIF channel status and track marker bits
-	AEB1      : 1,  // win , mac unused in the driver (in settings)
-	AEB2      : 1,  // = Emphasis
+	AEB1      : 1,  // ADAT1 internal (use with TEB or AEB extension boards)
+	AEB2      : 1,  // RayDAT ADAT2 internal, AIO: S/PDIF emphasis??
 	LineOut   : 1,  // AIO Pro only (AD/DA/PH power on/off?)
 	AD_GAIN   : 2,  // Input Level 0-2 (AIO) / 0-3 (AIO Pro)
 	DA_GAIN   : 2,  // Output Level 0-2 (AIO) / 0-3 (AIO Pro)

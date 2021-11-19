@@ -47,8 +47,6 @@ void hdspe_init_autosync_tables(struct hdspe* hdspe,
 
 	for (i=0, n=0; i<nr_autosync_opts; i++) {
 		enum hdspe_clock_source ref = autosync_opts[i];
-//		if (ref == HDSPE_CLOCK_SOURCE_TCO && !hdspe->tco)
-//			continue;  // do not offer TCO option if not present
 		if (ref == HDSPE_CLOCK_SOURCE_INTERN)
 			continue;  // skip unused codes
 		t->autosync_texts[n] = hdspe_clock_source_name(hdspe, ref);
@@ -248,20 +246,6 @@ static int hdspe_write_dds_i(struct hdspe* hdspe, int val)
 HDSPE_INT1_GET(dds, hdspe_get_dds, true)
 HDSPE_INT1_PUT(dds, NULL, hdspe_write_dds_i, true, false)
 
-#ifdef OLDSTUFF
-/* -------------- system sample rate ---------------- */
-
-HDSPE_RO_INT1_METHODS(sample_rate, 27000, 207000, 1,
-		     hdspe_read_system_sample_rate)
-
-HDSPE_RO_INT1_METHODS(pitch, 650000, 1350000, 1,
-		     hdspe_read_system_pitch)
-
-HDSPE_RW_INT1_METHODS(internal_pitch, 950000, 1050000, 1,
-		     hdspe_internal_pitch, hdspe_write_internal_pitch,
-		     false);
-#endif /*OLDSTUFF*/
-
 /* -------------- system clock mode ----------------- */
 
 static int snd_hdspe_info_clock_mode(struct snd_kcontrol *kcontrol,
@@ -337,29 +321,6 @@ HDSPE_RO_ENUM_METHODS(autosync_ref, hdspe_get_autosync_ref_idx);
 /* --------------- AutoSync Status ------------------- */
 
 #ifdef OLDSTUFF
-#define HDSPE_SYNC_STATUS(xname, xindex) \
-{	.iface = SNDRV_CTL_ELEM_IFACE_CARD, \
-	.name = xname, \
-	.private_value = xindex, \
-	.access = SNDRV_CTL_ELEM_ACCESS_READ | SNDRV_CTL_ELEM_ACCESS_VOLATILE, \
-	.info = snd_hdspe_info_sync_status, \
-	.get = snd_hdspe_get_sync_status \
-}
-
-int snd_hdspe_info_sync_status(struct snd_kcontrol *kcontrol,
-			       struct snd_ctl_elem_info *uinfo)
-{
-	static const char *const texts[] = {
-		HDSPE_SYNC_STATUS_NAME(0),
-		HDSPE_SYNC_STATUS_NAME(1),
-		HDSPE_SYNC_STATUS_NAME(2),
-		HDSPE_SYNC_STATUS_NAME(3)		
-	};
-	ENUMERATED_CTL_INFO(uinfo, texts);
-	return 0;
-}
-#endif /*OLDSTUFF*/
-
 static int snd_hdspe_get_sync_status(struct snd_kcontrol *kcontrol,
 			      struct snd_ctl_elem_value *ucontrol)
 {
@@ -369,7 +330,7 @@ static int snd_hdspe_get_sync_status(struct snd_kcontrol *kcontrol,
 		hdspe, syncref);
 	return 0;
 }
-
+#endif /*OLDSTUFF*/
 
 static int snd_hdspe_info_autosync_status(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_info *uinfo)
@@ -420,34 +381,6 @@ const char* const hdspe_freq_name(enum hdspe_freq i)
 	return (i >= 0 && i < HDSPE_FREQ_COUNT)
 		? texts_freq[i] : "???";
 }
-
-#ifdef OLDSTUFF
-#define HDSPE_SYNC_FREQ(xname, xindex) \
-{	.iface = SNDRV_CTL_ELEM_IFACE_CARD, \
-	.name = xname, \
-	.private_value = xindex, \
-	.access = SNDRV_CTL_ELEM_ACCESS_READ|SNDRV_CTL_ELEM_ACCESS_VOLATILE, \
-	.info = snd_hdspe_info_autosync_freq, \
-	.get = snd_hdspe_get_autosync_freq \
-}
-
-int snd_hdspe_info_autosync_freq(struct snd_kcontrol *kcontrol,
-				 struct snd_ctl_elem_info *uinfo)
-{
-	ENUMERATED_CTL_INFO(uinfo, texts_freq);
-	return 0;
-}
-
-int snd_hdspe_get_autosync_freq(struct snd_kcontrol *kcontrol,
-				struct snd_ctl_elem_value *ucontrol)
-{
-	struct hdspe *hdspe = snd_kcontrol_chip(kcontrol);
-	int syncref = kcontrol->private_value;
-	ucontrol->value.enumerated.item[0] =
-		hdspe->m.get_freq(hdspe, syncref);
-	return 0;
-}
-#endif /*OLDSTUFF*/
 
 static int snd_hdspe_info_autosync_freq(struct snd_kcontrol *kcontrol,
 					struct snd_ctl_elem_info *uinfo)
@@ -509,7 +442,7 @@ static int hdspe_put_internal_freq_idx(struct hdspe* hdspe, int val)
 	dev_dbg(hdspe->card->dev, "%s(%d): idx %d -> freq %d, pitch = %d\n",
 		__func__, val, val, val+1, pitch);
 	hdspe_write_internal_freq(hdspe, val+1);
-	/* Preserve pitch (essentially ratio of effective (intenral) sample rate
+	/* Preserve pitch (essentially ratio of effective (internal) sample rate
 	 * over standard (internal) sample rate) */
 	if (hdspe_write_internal_pitch(hdspe, pitch)) {
 		HDSPE_CTL_NOTIFY(dds);
@@ -585,13 +518,14 @@ static int snd_hdspe_info_aes_qs_mode(struct snd_kcontrol *kcontrol,
 HDSPE_RW_ENUM_REG_METHODS(raio_spdif_opt, settings, raio, Spdif_Opt, false)
 HDSPE_RW_ENUM_REG_METHODS(raio_spdif_pro, settings, raio, Pro, false)
 HDSPE_RW_ENUM_REG_METHODS(raio_aeb1, settings, raio, AEB1, false)
+HDSPE_RW_ENUM_REG_METHODS(raio_aeb2, settings, raio, AEB2, false)
 HDSPE_RW_ENUM_REG_METHODS(raio_sswclk, settings, raio, Wck48, false)
 HDSPE_RW_ENUM_REG_METHODS(raio_clr_tms, settings, raio, clr_tms, false)
 HDSPE_RW_ENUM_REG_METHODS(aio_xlr, settings, raio, Sym6db, false)
+  
+/* --------------------- S/PDIF input ---------------------- */
 
-/* --------------------- AIO S/PDIF input ---------------------- */
-
-static int snd_hdspe_info_aio_spdif_in(struct snd_kcontrol *kcontrol,
+static int snd_hdspe_info_raio_spdif_in(struct snd_kcontrol *kcontrol,
 				       struct snd_ctl_elem_info *uinfo)
 {
 	static const char *const texts[HDSPE_RAIO_SPDIF_INPUT_COUNT] = {
@@ -603,7 +537,7 @@ static int snd_hdspe_info_aio_spdif_in(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
-HDSPE_RW_ENUM_REG_METHODS(aio_spdif_in, settings, raio, Input, false)
+HDSPE_RW_ENUM_REG_METHODS(raio_spdif_in, settings, raio, Input, false)
 
 /* --------------------- AIO AD / DA / Phones level ----------------- */
 
@@ -707,15 +641,24 @@ static int snd_hdspe_info_aio_pro_phones_level(struct snd_kcontrol *kcontrol,
 #define snd_hdspe_get_aio_pro_phones_level   snd_hdspe_get_aio_phones_level
 #define snd_hdspe_put_aio_pro_phones_level   snd_hdspe_put_aio_phones_level
 
+static int hdspe_get_aio_ao4s(struct hdspe* hdspe)
+{
+	return !hdspe_read_status2(hdspe).raio.AEBO_D;
+}
+HDSPE_RO_ENUM_METHODS(aio_ao4s, hdspe_get_aio_ao4s)
+
+static int hdspe_get_aio_ai4s(struct hdspe* hdspe)
+{
+	return !hdspe_read_status2(hdspe).raio.AEBI_D;
+}
+HDSPE_RO_ENUM_METHODS(aio_ai4s, hdspe_get_aio_ai4s)
+
 /* --------------------------------------------------------- */
 
 /* Common control elements, except those for which we need to keep the id. The
  * ones we need to keep the id for, are added explicitly in snd_hdspe_create_controls(). */
 static const struct snd_kcontrol_new snd_hdspe_controls_common[] = {
 	HDSPE_RW_KCTL(CARD, "Clock Mode", clock_mode),
-#ifdef OLDSTUFF
-	HDSPE_RW_KCTL(CARD, "Internal Pitch", internal_pitch),
-#endif /*OLDSTUFF*/
 	HDSPE_RW_KCTL(CARD, "Preferred AutoSync Reference", pref_sync_ref),
 };
 
@@ -768,14 +711,19 @@ static const struct snd_kcontrol_new snd_hdspe_controls_aes[] = {
 };
 
 static const struct snd_kcontrol_new snd_hdspe_controls_raydat[] = {
+	HDSPE_RW_KCTL(CARD, "S/PDIF In", raio_spdif_in),
 	HDSPE_RW_BOOL_KCTL(CARD, "S/PDIF Out Optical", raio_spdif_opt),
 	HDSPE_RW_BOOL_KCTL(CARD, "S/PDIF Out Professional", raio_spdif_pro),
+	HDSPE_RW_BOOL_KCTL(CARD, "ADAT1 Internal", raio_aeb1),
+	HDSPE_RW_BOOL_KCTL(CARD, "ADAT2 Internal", raio_aeb2),
 	HDSPE_RW_BOOL_KCTL(CARD, "Single Speed WordClk Out", raio_sswclk),
 	HDSPE_RW_BOOL_KCTL(CARD, "Clear TMS", raio_clr_tms),	
 };
 
 static const struct snd_kcontrol_new snd_hdspe_controls_aio[] = {
-	HDSPE_RW_KCTL(CARD, "S/PDIF In", aio_spdif_in),
+	HDSPE_RO_BOOL_KCTL(CARD, "AO4S Present", aio_ao4s),
+	HDSPE_RO_BOOL_KCTL(CARD, "AI4S Present", aio_ai4s),
+	HDSPE_RW_KCTL(CARD, "S/PDIF In", raio_spdif_in),
 	HDSPE_RW_BOOL_KCTL(CARD, "S/PDIF Out Optical", raio_spdif_opt),
 	HDSPE_RW_BOOL_KCTL(CARD, "S/PDIF Out Professional", raio_spdif_pro),
 	HDSPE_RW_BOOL_KCTL(CARD, "ADAT Internal", raio_aeb1),
@@ -788,7 +736,7 @@ static const struct snd_kcontrol_new snd_hdspe_controls_aio[] = {
 };
 
 static const struct snd_kcontrol_new snd_hdspe_controls_aio_pro[] = {
-	HDSPE_RW_KCTL(CARD, "S/PDIF In", aio_spdif_in),
+	HDSPE_RW_KCTL(CARD, "S/PDIF In", raio_spdif_in),
 	HDSPE_RW_BOOL_KCTL(CARD, "S/PDIF Out Optical", raio_spdif_opt),
 	HDSPE_RW_BOOL_KCTL(CARD, "S/PDIF Out Professional", raio_spdif_pro),
 	HDSPE_RW_BOOL_KCTL(CARD, "ADAT Internal", raio_aeb1),
@@ -858,63 +806,6 @@ int hdspe_add_control_id(struct hdspe* hdspe,
 	return 0;
 }
 
-#ifdef OLDSTUFF
-static int hdspe_create_syncstatus_control(struct hdspe* hdspe,
-					    enum hdspe_clock_source src)
-{
-	struct snd_kcontrol_new kctl = HDSPE_SYNC_STATUS(0, src);
-
-	char buf[100];
-	snprintf(buf, sizeof(buf), "%s Status",
-		 hdspe_clock_source_name(hdspe, src));
-	kctl.name = buf;
-
-	return hdspe_add_control_id(hdspe, &kctl, &hdspe->cid.sync[src]);
-}
-
-static int hdspe_create_freq_control(struct hdspe* hdspe,
-				     enum hdspe_clock_source src)
-{
-	struct snd_kcontrol_new kctl = HDSPE_SYNC_FREQ(0, src);
-
-	char buf[100];
-	snprintf(buf, sizeof(buf), "%s Frequency",
-		 hdspe_clock_source_name(hdspe, src));
-	kctl.name = buf;
-
-	return hdspe_add_control_id(hdspe, &kctl, &hdspe->cid.freq[src]);
-}
-
-static int hdspe_create_autosync_controls(struct hdspe* hdspe)
-{
-	int i, err = 0;
-	
-	/* Create sync status item for every available clock source,
-	 * except internal clock (the last item in the list). */
-	for (i = 0; i < hdspe->t.autosync_count-1 && err >= 0; i++) {
-		err = hdspe_create_syncstatus_control(
-			hdspe, hdspe->t.autosync_idx2ref[i]);
-	}
-	if (!hdspe->tco && err >= 0) {  /* Create a control telling there is no TCO */
-		err = hdspe_create_syncstatus_control(
-			hdspe, HDSPE_CLOCK_SOURCE_TCO);
-	}
-
-	/* Create frequency status item for every available clock source,
-	 * except internal clock (the last item in the list). */
-	for (i = 0; i < hdspe->t.autosync_count-1 && err >= 0; i++) {
-		err = hdspe_create_freq_control(
-			hdspe, hdspe->t.autosync_idx2ref[i]);
-	}
-	if (!hdspe->tco && err >= 0) {  /* For completeness */
-		err = hdspe_create_freq_control(
-			hdspe, HDSPE_CLOCK_SOURCE_TCO);
-	}
-
-	return err;
-}
-#endif /*OLDSTUFF*/
-
 int snd_hdspe_create_controls(struct snd_card *card,
 			      struct hdspe *hdspe)
 {
@@ -939,10 +830,6 @@ int snd_hdspe_create_controls(struct snd_card *card,
 	
 	/* Common controls: sample rate etc ... */
 	if (hdspe->io_type != HDSPE_MADIFACE) {
-#ifdef OLDSTUFF	
-		HDSPE_ADD_RO_CONTROL_ID(CARD, "Sample Rate", sample_rate);
-		HDSPE_ADD_RO_CONTROL_ID(CARD, "Pitch", pitch);
-#endif /*OLDSTUFF*/
 		HDSPE_ADD_RV_CONTROL_ID(CARD, "Current AutoSync Reference", autosync_ref);
 		HDSPE_ADD_RV_CONTROL_ID(CARD, "External Frequency", external_freq);
 		
@@ -959,12 +846,6 @@ int snd_hdspe_create_controls(struct snd_card *card,
 					autosync_status);
 		HDSPE_ADD_RV_CONTROL_ID(CARD, "AutoSync Frequency",
 					autosync_freq);
-
-#ifdef OLDSTUFF		
-		err = hdspe_create_autosync_controls(hdspe);
-		if (err)
-			return err;
-#endif /*OLDSTUFF*/
 	}
 
 	/* Card specific controls */

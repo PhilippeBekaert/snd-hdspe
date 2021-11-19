@@ -543,6 +543,8 @@ static void hdspe_raio_read_status(struct hdspe* hdspe,
 
 	status->raio.aebo = !status2.AEBO_D;
 	status->raio.aebi = !status2.AEBI_D;
+	status->raio.aeb1 = settings.AEB1;
+	status->raio.aeb2 = settings.AEB2;
 	status->raio.spdif_in = settings.Input;
 	status->raio.spdif_opt = settings.Spdif_Opt;
 	status->raio.spdif_pro = settings.Pro;
@@ -560,6 +562,9 @@ static void hdspe_raio_read_status(struct hdspe* hdspe,
 		status->raio.aio_pro.output_level = settings.DA_GAIN +
 			(settings.Sym6db ? 4 : 0);
 		status->raio.aio_pro.phones_level = settings.PH_GAIN;
+		break;
+
+	case HDSPE_RAYDAT:
 		break;
 
 	default:
@@ -739,10 +744,19 @@ static void hdspe_raio_proc_read(struct snd_info_entry *entry,
 
 	hdspe_proc_read_common(buffer, hdspe, &s);
 
+	if (hdspe->io_type == HDSPE_AIO || hdspe->io_type == HDSPE_AIO_PRO) {
 	snd_iprintf(buffer, "Input AEB\t\t: %d %s\n", s.raio.aebi,
 		    HDSPE_BOOL_NAME(s.raio.aebi));
 	snd_iprintf(buffer, "Output AEB\t\t: %d %s\n", s.raio.aebo,
 		    HDSPE_BOOL_NAME(s.raio.aebo));
+	snd_iprintf(buffer, "ADAT internal\t\t: %d %s\n", s.raio.aeb1,
+		    HDSPE_BOOL_NAME(s.raio.aeb1));
+	} else if (hdspe->io_type == HDSPE_RAYDAT) {
+	snd_iprintf(buffer, "ADAT1 internal\t\t: %d %s\n", s.raio.aeb1,
+		    HDSPE_BOOL_NAME(s.raio.aeb1));
+	snd_iprintf(buffer, "ADAT2 internal\t\t: %d %s\n", s.raio.aeb2,
+		    HDSPE_BOOL_NAME(s.raio.aeb2));
+	}
 	snd_iprintf(buffer, "S/PDIF Input\t\t: %d %s\n", s.raio.spdif_in,
 		    HDSPE_RAIO_SPDIF_INPUT_NAME(s.raio.spdif_in));
 	snd_iprintf(buffer, "S/PDIF Optical output\t: %d %s\n", s.raio.spdif_opt,
@@ -918,14 +932,14 @@ static void hdspe_aio_init_tables(struct hdspe* hdspe)
 	hdspe->t = hdspe_aio_tables;
 	
 	if (!hdspe_read_status2(hdspe).raio.AEBI_D) {
-		dev_info(hdspe->card->dev, "AEB input board found\n");
+		dev_info(hdspe->card->dev, "AI4S board found.\n");
 		hdspe->t.ss_in_channels += 4;
 		hdspe->t.ds_in_channels += 4;
 		hdspe->t.qs_in_channels += 4;
 	}
 	
 	if (!hdspe_read_status2(hdspe).raio.AEBO_D) {
-		dev_info(hdspe->card->dev, "AEB output board found\n");
+		dev_info(hdspe->card->dev, "AO4S board found.\n");
 		hdspe->t.ss_out_channels += 4;
 		hdspe->t.ds_out_channels += 4;
 		hdspe->t.qs_out_channels += 4;

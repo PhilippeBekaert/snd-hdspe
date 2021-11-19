@@ -714,12 +714,15 @@ struct hdspe_status {
 
 		// RayDAT / AIO / AIO Pro specific status
 		struct hdspe_status_raio {
-			// Output Audio Extension Board presence.
+			// AO4S Output Audio Extension Board presence (AIO only)
 			enum hdspe_bool    aebo;
 
-			// Input Audio Extension Board presence.
+			// AI4S Input Audio Extension Board presence (AIO only)
 			enum hdspe_bool    aebi;
 
+			// ADAT internal (for old AEB / TEB expansion boards)
+			enum hdspe_bool    aeb1, aeb2; // aeb2 is RayDAT only
+		  
 			// S/PDIF input source.
 			enum hdspe_raio_spdif_input    spdif_in;
 
