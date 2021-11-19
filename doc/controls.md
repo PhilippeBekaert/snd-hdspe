@@ -209,8 +209,8 @@ AIO controls
 | CARD | ADAT Internal | RW | Bool | Use the internal connector for ADAT, with AEB or TEB expansion board | 
 | CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
 | CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
-| CARD | AO4S Present | RO | Bool | AO4S extension board present |
-| CARD | AI4S Present | RO | Bool | AI4S extension board present |
+| CARD | AO4S Present | RO | Bool | AO4S-192 analog output extension board present |
+| CARD | AI4S Present | RO | Bool | AI4S-192 analog input extension board present |
 
 
 RayDAT controls
