@@ -18,6 +18,7 @@ for more information on these controls.
 
 The access values in the tables below are a combination of the following symbols:
 
+| :- | :- |
 | R | Read |
 | W | Write |
 | V | Volative |
