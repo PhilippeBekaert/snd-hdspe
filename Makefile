@@ -5,7 +5,7 @@ ifndef KERNELRELEASE
 KERNELRELEASE := $(shell uname -r)
 endif
 
-KDIR    ?= /lib/modules/$(shell uname -r)/build
+KDIR    ?= /lib/modules/${KERNELRELEASE}/build
 PWD     := $(shell pwd)
 EXTRA_CFLAGS += -DDEBUG -DCONFIG_SND_DEBUG
 

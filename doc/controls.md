@@ -180,7 +180,7 @@ AIO Pro controls
 | CARD | S/PDIF In | RW | Enum | S/PDIF input connector: coaxial, optical or internal | 
 | CARD | S/PDIF Out Optical | RW | Bool | Output S/PDIF over TOSLINK | 
 | CARD | S/PDIF Out Professional | RW | Bool | Output professional mode S/PDIF | 
-| CARD | ADAT Internal | RW | Bool | Use the internal connector for ADAT | 
+| CARD | ADAT Internal | RW | Bool | Use the internal connector for ADAT, with AEB or TEB expansion board | 
 | CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
 | CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
 
@@ -199,14 +199,30 @@ AIO controls
 
 | Interface | Name | Access | Value Type | Description |
 | :- | :- | :- | :- | :- |
-| CARD | Input Level | RW | Enum | Analog audio input reference level: -10 dBV, +4 dBu (with 9dB headroom), Lo Gain (15 dB headroom) | 
-| CARD | Output Level | RW | Enum | Analog audio output reference level: -10 dBV, +4 dBu (with 9dB headroom), Hi Gain (15 dB headroom) | 
+| CARD | Input Level | RW | Enum | Analog audio input reference level: -10 dBV (with 12 dB headroom), +4 dBu (with 9dB headroom), Lo Gain (+4 dBu with 15 dB headroom) | 
+| CARD | Output Level | RW | Enum | Analog audio output reference level: -10 dBV (with 12 dB headroom), +4 dBu (with 9dB headroom), Hi Gain (+4 dBu with 15 dB headroom) | 
 | CARD | XLR Breakout Cable | RW | Enum | Analog output breakout cable: XLR or RCA. -6 dB gain correction on XLR for correct reference level |
 | CARD | Phones Level | RW | Enum | Headphones output level: same options as Output Level | 
 | CARD | S/PDIF In | RW | Enum | S/PDIF input connector: coaxial, optical or internal | 
 | CARD | S/PDIF Out Optical | RW | Bool | Output S/PDIF over TOSLINK | 
 | CARD | S/PDIF Out Professional | RW | Bool | Output professional mode S/PDIF | 
-| CARD | ADAT Internal | RW | Bool | Use the internal connector for ADAT | 
+| CARD | ADAT Internal | RW | Bool | Use the internal connector for ADAT, with AEB or TEB expansion board | 
+| CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
+| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
+| CARD | AO4S Present | RO | Bool | AO4S extension board present |
+| CARD | AI4S Present | RO | Bool | AI4S extension board present |
+
+
+RayDAT controls
+---------------
+
+| Interface | Name | Access | Value Type | Description |
+| :- | :- | :- | :- | :- |
+| CARD | S/PDIF In | RW | Enum | S/PDIF input connector: coaxial, optical from ADAT4 connector, or internal | 
+| CARD | S/PDIF Out Optical | RW | Bool | Output S/PDIF on ADAT4 connector | 
+| CARD | S/PDIF Out Professional | RW | Bool | Output professional mode S/PDIF | 
+| CARD | ADAT1 Internal | RW | Bool | Use the internal ADAT1 connector instead of optical, for AEB or TEB expansion board | 
+| CARD | ADAT2 Internal | RW | Bool | Use the internal ADAT2 connector instead of optical, for AEB or TEB expansion board | 
 | CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
 | CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
 
