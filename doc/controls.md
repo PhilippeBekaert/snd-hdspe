@@ -18,10 +18,11 @@ for more information on these controls.
 
 The access values in the tables below are a combination of the following symbols:
 
+| Symbol | Meaning |
 | :- | :- |
-| R | Read |
-| W | Write |
-| V | Volative |
+| R | Control element is readable |
+| W | Control element is writable |
+| V | Control element is volatile |
 
 Controls common to all supported cards
 --------------------------------------
