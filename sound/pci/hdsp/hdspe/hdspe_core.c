@@ -27,8 +27,10 @@
  *      Modified 2019-05-23 fix AIO single speed ADAT capture and playback
  *      by Philippe.Bekaert@uhasselt.be
  *
- *      Modified 2021-07-XX AIO Pro support, fixes, register documentation,
- *      clean up, refactoring, updated user space API, renamed hdspe, 
+ *      Modified 2021-07 ... 2021-11 AIO Pro support, fixes, register 
+ *      documentation, clean up, refactoring, updated user space API,
+ *      renamed hdspe, updated control elements, TCO LTC output, double/quad
+ *      speed AIO / AIO Pro fixes, ...
  *      by Philippe.Bekaert@uhasselt.be
  */
 
@@ -134,21 +136,19 @@ static irqreturn_t snd_hdspe_interrupt(int irq, void *dev_id)
 
 	if (audio) {
 		hdspe_update_frame_count(hdspe);
+		
 		if (hdspe->tco) {
 			/* LTC In update must happen before client
 			 * apps are notified of a new period */
 			hdspe_tco_period_elapsed(hdspe);
 		}
-		
+
 		if (hdspe->capture_substream)
 			snd_pcm_period_elapsed(hdspe->capture_substream);
 
 		if (hdspe->playback_substream)
 			snd_pcm_period_elapsed(hdspe->playback_substream);
-#ifdef NEVER
-		if (hdspe->tco)
-			queue_work(system_highpri_wq, &hdspe->tco_work);
-#endif /*NEVER*/
+
 		/* status polling at user controlled rate */
 		if (hdspe->status_polling > 0 &&
 		    jiffies >= hdspe->last_status_jiffies
@@ -177,31 +177,36 @@ static irqreturn_t snd_hdspe_interrupt(int irq, void *dev_id)
 			queue_work(system_highpri_wq, &hdspe->midi_work);
 		}
 	}
-
+	
 	return IRQ_HANDLED;
 }
 
-static void hdspe_tco_work(struct work_struct* work)
+/* Start audio and TCO MTC interrupts. Other MIDI interrupts
+ * are enabled when the MIDI devices are created. */
+static void hdspe_start_interrupts(struct hdspe* hdspe)
 {
-	struct hdspe* hdspe = container_of(work, struct hdspe, tco_work);
-	hdspe_tco_period_elapsed(hdspe);
-}
-
-/* Start audio and TCO MTC interrupts */
-static void hdspe_start_tco_interrupts(struct hdspe* hdspe)
-{
-	/* TCO MTC port is always the last one */
-	struct hdspe_midi *m = &hdspe->midi[hdspe->midiPorts-1];
+	if (hdspe->tco) {
+		/* TCO MTC port is always the last one */
+		struct hdspe_midi *m = &hdspe->midi[hdspe->midiPorts-1];
 	
-	if (!hdspe->tco)
-		return;
+		dev_dbg(hdspe->card->dev,
+			"%s: enabling TCO MTC input port %d '%s'.\n",
+			__func__, m->id, m->portname);
+		hdspe->reg.control.raw |= m->ie;	
+	}
 
-	dev_dbg(hdspe->card->dev, "%s: enabling TCO MTC input port %d '%s'.\n",
-		__func__, m->id, m->portname);
-	hdspe->reg.control.raw |= m->ie;
 	hdspe->reg.control.common.START =
 	hdspe->reg.control.common.IE_AUDIO = true;
 
+	hdspe_write_control(hdspe);
+}
+
+static void hdspe_stop_interrupts(struct hdspe* hdspe)
+{
+	/* stop the audio, and cancel all interrupts */
+	hdspe->reg.control.common.START =
+	hdspe->reg.control.common.IE_AUDIO = false;
+	hdspe->reg.control.raw &= ~hdspe->midiInterruptEnableMask;
 	hdspe_write_control(hdspe);
 }
 
@@ -292,12 +297,6 @@ static int hdspe_init(struct hdspe* hdspe)
 
 static void hdspe_terminate(struct hdspe* hdspe)
 {
-	/* stop the audio, and cancel all interrupts */
-	hdspe->reg.control.common.START =
-	hdspe->reg.control.common.IE_AUDIO = false;
-	hdspe->reg.control.raw &= ~hdspe->midiInterruptEnableMask;
-	hdspe_write_control(hdspe);
-
 	switch (hdspe->io_type) {
 	case HDSPE_MADI    :
 	case HDSPE_MADIFACE: hdspe_terminate_madi(hdspe); break;
@@ -326,7 +325,7 @@ static uint32_t snd_hdspe_get_serial_rev1(struct hdspe* hdspe)
 	 * this case, we don't set card->id to avoid collisions
 	 * when running with multiple cards.
 	 */
-	if (id[hdspe->dev] || hdspe->serial == 0xFFFFFF) {
+	if (id[hdspe->dev] || serial == 0xFFFFFF) {
 		serial = 0;
 	}
 	return serial;
@@ -396,7 +395,6 @@ static int snd_hdspe_create(struct hdspe *hdspe)
 	spin_lock_init(&hdspe->lock);
 	INIT_WORK(&hdspe->midi_work, hdspe_midi_work);
 	INIT_WORK(&hdspe->status_work, hdspe_status_work);
-	INIT_WORK(&hdspe->tco_work, hdspe_tco_work);
 
 	pci_read_config_word(hdspe->pci,
 			PCI_CLASS_REVISION, &hdspe->firmware_rev);
@@ -410,8 +408,8 @@ static int snd_hdspe_create(struct hdspe *hdspe)
 					   hdspe->firmware_rev);
 	if (hdspe->io_type == HDSPE_IO_TYPE_INVALID) {
 		dev_err(card->dev,
-			"unknown firmware revision %x\n",
-			hdspe->firmware_rev);
+			"unknown firmware revision %d (0x%x)\n",
+			hdspe->firmware_rev, hdspe->firmware_rev);
 		return -ENODEV;
 	}
 
@@ -465,8 +463,13 @@ static int snd_hdspe_create(struct hdspe *hdspe)
 	dev_dbg(card->dev, "serial nr %08d\n", hdspe->serial);
 
 	/* Card ID */
-	snprintf(card->id, sizeof(card->id), "HDSPe%08d", hdspe->serial);
-	snd_card_set_id(card, card->id);
+	if (hdspe->serial != 0) { /* don't set ID if no serial (old PCI card) */
+		snprintf(card->id, sizeof(card->id), "HDSPe%08d",
+			 hdspe->serial);
+		snd_card_set_id(card, card->id);
+	} else {
+		dev_warn(card->dev, "Card ID not set: no serial number.\n");
+	}
 
 	/* Mixer */
 	err = hdspe_init_mixer(hdspe);
@@ -488,7 +491,7 @@ static int snd_hdspe_create(struct hdspe *hdspe)
 	if (err < 0)
 		return err;
 
-	if (hdspe->io_type != HDSPE_MADIFACE) {
+	if (hdspe->io_type != HDSPE_MADIFACE && hdspe->serial != 0) {
 		snprintf(card->shortname, sizeof(card->shortname), "%s_%08d",
 			hdspe->card_name, hdspe->serial);
 		snprintf(card->longname, sizeof(card->longname),
@@ -510,9 +513,9 @@ static int snd_hdspe_create(struct hdspe *hdspe)
 static int snd_hdspe_free(struct hdspe * hdspe)
 {
 	if (hdspe->port) {
+		hdspe_stop_interrupts(hdspe);
 		cancel_work_sync(&hdspe->midi_work);
 		cancel_work_sync(&hdspe->status_work);
-		cancel_work_sync(&hdspe->tco_work);
 		hdspe_terminate(hdspe);
 		hdspe_terminate_tco(hdspe);
 		hdspe_terminate_mixer(hdspe);
@@ -580,7 +583,7 @@ static int snd_hdspe_probe(struct pci_dev *pci,
 
 	dev++;
 
-	hdspe_start_tco_interrupts(hdspe);
+	hdspe_start_interrupts(hdspe);
 	
 	return 0;
 

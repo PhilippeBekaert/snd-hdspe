@@ -217,14 +217,16 @@ void hdspe_update_frame_count(struct hdspe* hdspe)
 
 static inline void hdspe_start_audio(struct hdspe * s)
 {
-	if (s->tco) return;   // always running
+	return;   /* we have audio interrupts enabled all the time */
+	if (s->tco) return;   /* always running with TCO */
 	s->reg.control.common.START = s->reg.control.common.IE_AUDIO = true;
 	hdspe_write_control(s);
 }
 
 static inline void hdspe_stop_audio(struct hdspe * s)
 {
-	if (s->tco) return;   // always running	
+	return;   /* we leave audio interrupts enabled all the time */	
+	if (s->tco) return;   /* leave always running with TCO */
 	s->reg.control.common.START = s->reg.control.common.IE_AUDIO = false;
 	hdspe_write_control(s);
 }

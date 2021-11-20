@@ -944,7 +944,7 @@ struct hdspe {
 	/* Check for status changes, status_polling times per second, if >0. 
 	 * Status polling is disabled if 0.
 	 * Initially, it is 0 and needs to be enabled by the client.
-	 * hdspe_status_work() resets to 0 when detecting a change,
+	 * hdspe_status_work() resets it to 0 when detecting a change,
 	 * notifying the client with a "Status Polling"
 	 * control notification event and notifications for all
 	 * changed status control elements. 
@@ -955,6 +955,7 @@ struct hdspe {
 	int status_polling;
 	struct work_struct status_work;
 	unsigned long last_status_jiffies;
+	unsigned long last_status_change_jiffies;
 	struct hdspe_status last_status;
 	struct hdspe_ctl_ids cid;   /* control ids to be notified */
 	
@@ -969,7 +970,6 @@ struct hdspe {
 
 	/* Optional Time Code Option module handle (NULL if absent) */
 	struct hdspe_tco *tco;
-	struct work_struct tco_work;
 #ifdef DEBUG_LTC
 	struct timer_list tco_timer;
 #endif /*DEBUG_LTC*/

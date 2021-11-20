@@ -255,7 +255,7 @@ static u32 hdspe_ppm2dds(struct hdspe* hdspe, int ppm)
 	u64 fconst = freq_const[hdspe->io_type];
 	u64 refdds = div_u64(fconst, refrate);
 	u64 refddsM = 1000000ULL * refdds;
-	snd_BUG_ON(ppm == 0);
+	/*	snd_BUG_ON(ppm == 0); */
 	return ppm != 0 ? (u32)div_u64(refddsM, ppm) : refdds;
 }
 
@@ -306,8 +306,7 @@ int hdspe_write_dds(struct hdspe* hdspe, u32 dds)
 
 done:
 	dev_dbg(hdspe->card->dev, "%s() dds = %u sample_rate = %u rc = %d.\n",
-		__func__, dds,
-		dds!=0 ? hdspe_dds_sample_rate(hdspe, dds) : -1, rc);
+		__func__, dds, hdspe_dds_sample_rate(hdspe, dds), rc);
 	return rc;
 }
 

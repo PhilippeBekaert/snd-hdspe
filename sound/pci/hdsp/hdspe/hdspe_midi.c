@@ -99,30 +99,6 @@ static int snd_hdspe_midi_input_read (struct hdspe_midi *hmidi)
 
 	spin_lock_irqsave (&hmidi->lock, flags);
 	n_pending = snd_hdspe_midi_input_available (hmidi->hdspe, hmidi->id);
-#ifdef OLDSTUFF
-	if (n_pending > 0) {
-		if (hmidi->input) {
-			/* read and receive up to sizeof(buf) bytes */
-			if (n_pending > (int)sizeof (buf)) {
-				n_pending = sizeof (buf);
-				/* Q: are the excess pending bytes discarded or
-				 * picked up next time, or is this something
-				 * that cannot happen?? */
-			}
-			for (i = 0; i < n_pending; ++i)
-				buf[i] = snd_hdspe_midi_read_byte (hmidi->hdspe,
-								   hmidi->id);
-			if (n_pending)
-				snd_rawmidi_receive (hmidi->input, buf,
-						     n_pending);
-		} else {
-			/* flush the MIDI input FIFO */
-			while (n_pending--)
-				snd_hdspe_midi_read_byte (hmidi->hdspe,
-							  hmidi->id);
-		}
-	}
-#endif /*OLDSTUFF*/
 	while (n_pending > 0) {
 		for (i = 0; i < n_pending && i < sizeof(buf); i++)
 			buf[i] = snd_hdspe_midi_read_byte (hmidi->hdspe,

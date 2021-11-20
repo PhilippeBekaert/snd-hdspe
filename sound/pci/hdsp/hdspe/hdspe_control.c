@@ -196,11 +196,21 @@ void hdspe_status_work(struct work_struct *work)
 		changed = true;
 	}
 	
-	if (changed || jiffies > hdspe->last_status_jiffies * 2*HZ) {
-		hdspe->last_status = n;
+	hdspe->last_status = n;
+
+	if (hdspe->last_status_change_jiffies == 0)
+		hdspe->last_status_change_jiffies = jiffies;
+	
+	if (changed || jiffies > hdspe->last_status_change_jiffies + 2*HZ) {
+		if (jiffies > hdspe->last_status_change_jiffies + 2*HZ)
+			dev_dbg(hdspe->card->dev,
+				"%s: polling timeout expired.\n", __func__);
 		hdspe->status_polling = 0; /* disable - user must re-enable */
 		HDSPE_CTL_NOTIFY(status_polling);
 	}
+
+	if (changed)
+		hdspe->last_status_change_jiffies = jiffies;
 }
 
 
@@ -438,16 +448,17 @@ static int hdspe_get_internal_freq_idx(struct hdspe* hdspe)
 }
 static int hdspe_put_internal_freq_idx(struct hdspe* hdspe, int val)
 {
+	int changed = 0;
 	int pitch = hdspe_internal_pitch(hdspe);
 	dev_dbg(hdspe->card->dev, "%s(%d): idx %d -> freq %d, pitch = %d\n",
 		__func__, val, val, val+1, pitch);
-	hdspe_write_internal_freq(hdspe, val+1);
+	changed = hdspe_write_internal_freq(hdspe, val+1);
 	/* Preserve pitch (essentially ratio of effective (internal) sample rate
 	 * over standard (internal) sample rate) */
 	if (hdspe_write_internal_pitch(hdspe, pitch)) {
 		HDSPE_CTL_NOTIFY(dds);
 	}
-	return 0;
+	return changed;
 }
 
 HDSPE_RW_ENUM_METHODS(internal_freq,
