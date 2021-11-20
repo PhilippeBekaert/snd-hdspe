@@ -92,10 +92,11 @@ assists module signing for secure boot.
 
 **Status**
 
-At this time (November, 17 2021), the driver is early work in progress.
-- AIO, AIO Pro and TCO support is pretty complete and lab-tested.
-- MADI/AES/RayDAT card support is to be completed and tested.
+At this time (November, 19 2021), the driver is early work in progress.
+- RayDAT, AIO, AIO Pro and TCO control and PCM capture and playback support is pretty complete.
+- MADI / AES card support is to be completed and tested.
 - It is developed on ubuntu studio 20.04 and has only been tested on that distribution so far.
+- Other TODOs: MIDI testing, mixer interface, ...
 
 **Acknowledgements**
 
