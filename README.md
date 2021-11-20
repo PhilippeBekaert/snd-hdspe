@@ -1,6 +1,6 @@
 # snd-hdspe
 New linux kernel ALSA driver for [RME](http://www.rme-audio.com) HDSPe MADI / AES / RayDAT / AIO and AIO Pro sound cards and extension modules.
-In addition to the functionality offered by the stock snd-hdspm linux driver, this driver provides support for the HDSPe AIO Pro card and TCO module LTC output. Programmers will appreciate the completely updated control interface, enabling access to the advanced features of these professional audio cards though generic ALSA control mechanisms instead of ad-hoc ioctl's. Users will appreciate [hdspeconf](https://github.com/PhilippeBekaert/hdspeconf), the friendly user space HDSPe sound card configuration tool that builds upon this driver.
+In addition to the functionality offered by the stock snd-hdspm linux driver, this driver provides support for the HDSPe AIO Pro card and TCO module LTC output and fixes issues such as double/quad speed support of AIO cards. Programmers will appreciate the completely updated control interface, enabling access to the advanced features of these professional audio cards though generic ALSA control mechanisms instead of ad-hoc ioctl's. Users will appreciate [hdspeconf](https://github.com/PhilippeBekaert/hdspeconf), the friendly user space HDSPe sound card configuration tool that builds upon this driver.
 
 **Instructions**
 
