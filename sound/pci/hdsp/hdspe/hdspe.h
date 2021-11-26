@@ -706,7 +706,7 @@ struct hdspe_status {
 			enum hdspe_bool             pro;
 			enum hdspe_bool             emp;
 			enum hdspe_bool             dolby;
-			enum hdspe_bool             smux;
+			enum hdspe_bool             lineout;
 			enum hdspe_ds_mode          ds_mode;
 			enum hdspe_qs_mode          qs_mode;
 			uint32_t                    aes_mode;

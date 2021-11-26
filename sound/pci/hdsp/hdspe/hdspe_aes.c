@@ -3,12 +3,18 @@
  * hdspe_aes.c
  * @brief RME HDSPe AES driver methods.
  *
- * 20210728 - Philippe.Bekaert@uhasselt.be
+ * 20210728,1125 - Philippe.Bekaert@uhasselt.be
  *
  * Based on earlier work of the other MODULE_AUTHORs,
  * information kindly made available by RME (www.rme-audio.com),
  * and hardware kindly made available by Amptec Belgium (www.amptec.be).
  */
+
+// TODO:
+// - Double Wire / Quad Wire mode: fewer channels.
+// - FormatAC3
+// - Buffer pointer
+// - status2 AES mode ???
 
 #include "hdspe.h"
 #include "hdspe_core.h"
@@ -118,6 +124,42 @@ static const char* const aes_control_bitNames[32] = {
 	"AES_float_format",
 	"freq3"
 };
+
+/* RD_STATUS2 register bit names for AES */
+static const char* const aes_status2_bitNames[32] = {
+	"lock_aes8",
+	"lock_aes7",
+	"lock_aes6",
+	"lock_aes5",
+	"lock_aes4",
+	"lock_aes3",
+	"lock_aes2",
+	"lock_aes1",
+	"sync_aes8",
+	"sync_aes7",
+	"sync_aes6",
+	"sync_aes5",
+	"sync_aes4",
+	"sync_aes3",
+	"sync_aes2",
+	"sync_aes1",
+	"aes_mode0",
+	"aes_mode1",
+	"aes_mode2",
+	"aes_mode3",
+	"sync_in_lock",
+	"sync_in_sync",
+	"sync_in_freq0",
+	"sync_in_freq1",
+	"sync_in_freq2",
+	"sync_in_freq3",
+	"?26",
+	"?27",
+	"?28",
+	"?29",
+	"?30",
+	"?31"
+};
 #endif /*CONFIG_SND_DEBUG*/
 
 static void hdspe_aes_read_status(struct hdspe* hdspe,
@@ -182,7 +224,7 @@ static void hdspe_aes_read_status(struct hdspe* hdspe,
 	status->aes.pro = control.PRO;
 	status->aes.emp = control.EMP;
 	status->aes.dolby = control.Dolby;
-	status->aes.smux = control.SMUX;
+	status->aes.lineout = control.LineOut;
 	status->aes.ds_mode = control.ds_mode;
 	status->aes.qs_mode = control.qs_mode;
 
@@ -190,11 +232,13 @@ static void hdspe_aes_read_status(struct hdspe* hdspe,
 	status->aes.aes_mode = status2.aes_mode;
 }
 
+#ifdef OLDSTUFF
 static bool hdspe_aes_has_status_changed(struct hdspe* hdspe)
 {
 	dev_dbg(hdspe->card->dev, "%s TODO\n", __func__);
 	return false;
 }
+#endif /*OLDSTUFF*/
 
 static void hdspe_aes_set_float_format(struct hdspe* hdspe, bool val)
 {
@@ -246,6 +290,7 @@ static enum hdspe_clock_source hdspe_aes_get_autosync_ref(struct hdspe* hdspe)
 	return aes_autosync_ref[hdspe_read_status0(hdspe).aes.sync_ref];
 }
 
+#ifdef OLDSTUFF
 static enum hdspe_sync_status hdspe_aes_get_sync_status(
 	struct hdspe* hdspe, enum hdspe_clock_source src)
 {
@@ -256,7 +301,7 @@ static enum hdspe_sync_status hdspe_aes_get_sync_status(
 static enum hdspe_freq hdspe_aes_get_freq(
 	struct hdspe* hdspe, enum hdspe_clock_source src)
 {
-	dev_warn(hdspe->card->dev, "hdspe_aes_get_freq todo");
+	dev_warn(hdspe->card->dev, "%s TODO.\n", __func__);  
 	return HDSPE_FREQ_NO_LOCK;
 }
 
@@ -266,15 +311,44 @@ static enum hdspe_freq hdspe_aes_get_external_freq(struct hdspe* hdspe)
 	return hdspe_speed_adapt(hdspe_aes_get_freq(hdspe, src),
 				 hdspe_speed_mode(hdspe));
 }
-
-
+#endif /*OLDSTUFF*/
 
 static void hdspe_aes_proc_read(struct snd_info_entry * entry,
 				struct snd_info_buffer *buffer)
 {
 	struct hdspe *hdspe = entry->private_data;
-	dev_warn(hdspe->card->dev, "%s TODO.\n", __func__);
+	struct hdspe_status s;
+	
+	hdspe_proc_read_common(buffer, hdspe, &s);
 
+	snd_iprintf(buffer, "Professional\t\t: %d %s\n", s.aes.pro,
+		    HDSPE_BOOL_NAME(s.aes.pro));
+	snd_iprintf(buffer, "Emphasis\t\t: %d %s\n", s.aes.emp,
+		    HDSPE_BOOL_NAME(s.aes.emp));
+	snd_iprintf(buffer, "Non-audio\t\t: %d %s\n", s.aes.dolby,
+		    HDSPE_BOOL_NAME(s.aes.dolby));
+	snd_iprintf(buffer, "Line Out\t\t: %d %s\n", s.aes.lineout,
+		    HDSPE_BOOL_NAME(s.aes.lineout));
+	snd_iprintf(buffer, "Double speed mode\t: %d %s\n", s.aes.ds_mode,
+		    HDSPE_DS_MODE_NAME(s.aes.ds_mode));
+	snd_iprintf(buffer, "Quad speed mode\t\t: %d %s\n", s.aes.qs_mode,
+		    HDSPE_QS_MODE_NAME(s.aes.qs_mode));
+	snd_iprintf(buffer, "AES mode\t\t: %d %01x\n", s.aes.aes_mode,
+		    s.aes.aes_mode);
+
+	snd_iprintf(buffer, "\n");
+	IPRINTREG(buffer, "CONTROL", hdspe->reg.control.raw,
+		  aes_control_bitNames);
+	{
+		union hdspe_status2_reg status2 = hdspe_read_status2(hdspe);
+		u32 fbits = hdspe_read_fbits(hdspe);
+		IPRINTREG(buffer, "STATUS2", status2.raw,
+			  aes_status2_bitNames);
+		hdspe_iprint_fbits(buffer, "FBITS", fbits);
+	}
+
+	hdspe_proc_read_common2(buffer, hdspe, &s);
+	
 #ifdef OLDSTUFF
 	struct hdspe *hdspe = entry->private_data;
 	unsigned int status;
@@ -426,15 +500,19 @@ static const struct hdspe_methods hdspe_aes_methods = {
 	.get_float_format = hdspe_aes_get_float_format,
 	.set_float_format = hdspe_aes_set_float_format,
 	.read_proc = hdspe_aes_proc_read,
+#ifdef OLDSTUFF
 	.get_freq = hdspe_aes_get_freq,
-	.get_autosync_ref = hdspe_aes_get_autosync_ref,
 	.get_external_freq = hdspe_aes_get_external_freq,
+#endif /*OLDSTUFF*/
+	.get_autosync_ref = hdspe_aes_get_autosync_ref,
 	.get_clock_mode = hdspe_aes_get_clock_mode,
 	.set_clock_mode = hdspe_aes_set_clock_mode,
 	.get_pref_sync_ref = hdspe_aes_get_preferred_sync_ref,
 	.set_pref_sync_ref = hdspe_aes_set_preferred_sync_ref,
+#ifdef OLDSTUFF
 	.get_sync_status = hdspe_aes_get_sync_status,
 	.has_status_changed = hdspe_aes_has_status_changed
+#endif /*OLDSTUFF*/
 };
 
 static const struct hdspe_tables hdspe_aes_tables = {
@@ -492,7 +570,7 @@ static struct hdspe_midi hdspe_aes_midi_ports[3] = {
 int hdspe_init_aes(struct hdspe* hdspe)
 {
 	hdspe->reg.control.aes.Master = true;
-	hdspe->reg.control.aes.SyncRef0 = 1; // preferred sync is AES1
+	//	hdspe->reg.control.aes.SyncRef0 = 1; // preferred sync is AES1
 	hdspe->reg.control.aes.PRO = true;   // Professional mode
 
 #ifdef FROM_WIN_DRIVER
@@ -529,7 +607,7 @@ int hdspe_init_aes(struct hdspe* hdspe)
 #endif
 	
 	hdspe_write_control(hdspe);	
-	
+
 	hdspe->m = hdspe_aes_methods;
 
 	hdspe->card_name = "RME AES";

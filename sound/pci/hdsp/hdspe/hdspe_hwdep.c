@@ -5,6 +5,7 @@
  *
  * 20210728 - Philippe.Bekaert@uhasselt.be
  * 20210810,12 - PhB : new card info ioctl.
+ * 20211125 - PhB : IOCTL_GET_CONFIG reimplemented in terms of hdspe_status.
  *
  * Refactored work of the other MODULE_AUTHORs.
  */
@@ -14,7 +15,7 @@
 
 #include <sound/hwdep.h>
 
-
+#ifdef OLDSTUFF
 /* AutoSync external sync source frequency class. Returns 0 if
  * no valid external reference. */
 static enum hdspe_freq hdspe_autosync_freq(struct hdspe *hdspe)
@@ -23,6 +24,7 @@ static enum hdspe_freq hdspe_autosync_freq(struct hdspe *hdspe)
 	hdspe->m.read_status(hdspe, &status);
 	return status.external_freq;
 }
+#endif /*OLDSTUFF*/
 
 static int snd_hdspe_hwdep_dummy_op(struct snd_hwdep *hw, struct file *file)
 {
@@ -190,6 +192,22 @@ static int snd_hdspe_hwdep_ioctl(struct snd_hwdep *hw, struct file *file,
 
 		memset(&info, 0, sizeof(info));
 		spin_lock_irq(&hdspe->lock);
+		hdspe->m.read_status(hdspe, &status);
+		info.pref_sync_ref = status.preferred_ref;
+		info.wordclock_sync_check =
+			status.sync[HDSPE_CLOCK_SOURCE_WORD];
+		snd_BUG_ON(status.sample_rate_denominator == 0);
+		info.system_sample_rate = div_u64(status.sample_rate_numerator,
+			status.sample_rate_denominator);
+		info.autosync_sample_rate =
+			hdspe_freq_sample_rate(status.external_freq);
+		info.system_clock_mode = status.clock_mode;
+		info.clock_source = status.internal_freq;
+		info.autosync_ref = status.autosync_ref;
+		info.line_out = hdspe->reg.control.common.LineOut;
+		info.passthru = 0;
+
+#ifdef OLDSTUFF
 		info.pref_sync_ref = hdspe->m.get_pref_sync_ref(hdspe);
 		info.wordclock_sync_check = hdspe->m.get_sync_status(
 			hdspe, HDSPE_CLOCK_SOURCE_WORD);
@@ -202,6 +220,7 @@ static int snd_hdspe_hwdep_ioctl(struct snd_hwdep *hw, struct file *file,
 		info.autosync_ref = hdspe->m.get_autosync_ref(hdspe);
 		info.line_out = hdspe->reg.control.common.LineOut;
 		info.passthru = 0;
+#endif /*OLDSTUFF*/
 		spin_unlock_irq(&hdspe->lock);
 		if (copy_to_user(argp, &info, sizeof(info)))
 			return -EFAULT;

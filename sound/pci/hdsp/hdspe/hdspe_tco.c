@@ -97,6 +97,7 @@ static const char* const tco1_bitNames[32] = {
         "?31"
 };
 
+#ifdef NEVER
 static const char* const tco2_bitNames[32] = {
         "?00",	
         "?01",
@@ -134,6 +135,7 @@ static const char* const tco2_bitNames[32] = {
 	"set_input_MSB",
 	"set_freq_from_app",
 };
+#endif /*NEVER*/
 #endif /*CONFIG_SND_DEBUG*/
 
 /*

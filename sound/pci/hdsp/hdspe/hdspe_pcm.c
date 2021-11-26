@@ -86,9 +86,17 @@ static inline void snd_hdspe_enable_out(struct hdspe * hdspe, int i, int v)
 /* Return hardware buffer pointer in samples (always 4 bytes) */
 snd_pcm_uframes_t hdspe_hw_pointer(struct hdspe *hdspe)
 {
-	// (BUF_PTR << 6) bytes / 4 bytes per sample
-	return le16_to_cpu(hdspe->reg.status0.common.BUF_PTR) << 4;
+	switch (hdspe->io_type) {
+	case HDSPE_RAYDAT:
+	case HDSPE_AIO:
+	case HDSPE_AIO_PRO:		
+		// (BUF_PTR << 6) bytes / 4 bytes per sample
+		return le16_to_cpu(hdspe->reg.status0.common.BUF_PTR) << 4;
 
+	default:
+		return hdspe->reg.status0.common.BUF_ID
+			* hdspe_period_size(hdspe);
+	}
 #ifdef OLDSTUFF	
 	int position;
 

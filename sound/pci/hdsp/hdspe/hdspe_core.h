@@ -826,16 +826,20 @@ struct hdspe_methods {
 	void (*set_float_format)(struct hdspe* hdspe, bool val);
 	bool (*get_float_format)(struct hdspe* hdspe);
 	void (*read_proc)(struct snd_info_entry*, struct snd_info_buffer*);
+#ifdef OLDSTUFF
 	enum hdspe_freq (*get_freq)(struct hdspe*, enum hdspe_clock_source);
 	enum hdspe_freq (*get_external_freq)(struct hdspe*);
+#endif /*OLDSTUFF*/
 	enum hdspe_clock_source (*get_autosync_ref)(struct hdspe*);
 	enum hdspe_clock_mode (*get_clock_mode)(struct hdspe*);
 	void (*set_clock_mode)(struct hdspe*, enum hdspe_clock_mode);
 	enum hdspe_clock_source (*get_pref_sync_ref)(struct hdspe*);
 	void (*set_pref_sync_ref)(struct hdspe*, enum hdspe_clock_source);
+#ifdef OLDSTUFF
 	enum hdspe_sync_status (*get_sync_status)(struct hdspe*,
 						  enum hdspe_clock_source);
 	bool (*has_status_changed)(struct hdspe* hdspe);
+#endif /*OLDSTUFF*/
 };
 
 /**
@@ -889,7 +893,9 @@ struct hdspe_ctl_ids {
 	struct snd_ctl_elem_id* raw_sample_rate;
 	struct snd_ctl_elem_id* dds;
 	struct snd_ctl_elem_id* autosync_ref;
+#ifdef OLDSTUFF  
 	struct snd_ctl_elem_id* external_freq;
+#endif /*OLDSTUFF*/
 	struct snd_ctl_elem_id* autosync_status;
 	struct snd_ctl_elem_id* autosync_freq;
 
@@ -1160,10 +1166,15 @@ extern void hdspe_get_card_info(struct hdspe* hdspe, struct hdspe_card_info *s);
 extern void snd_hdspe_proc_init(struct hdspe *hdspe);
 
 /* Read hdspe_status from hardware and prints properties common to all 
- * HDSPe cards. */
+ * HDSPe cards, to be done before printing card-specific state. */
 extern void hdspe_proc_read_common(struct snd_info_buffer *buffer,
 				   struct hdspe* hdspe,
 				   struct hdspe_status* s);
+
+/* Proc read common stuff to be done after printing card-specific state */
+void hdspe_proc_read_common2(struct snd_info_buffer *buffer,
+			     struct hdspe* hdspe,
+			     struct hdspe_status* s);
 
 /* Prints the fields of the FBITS register  */
 extern void hdspe_iprint_fbits(struct snd_info_buffer *buffer,

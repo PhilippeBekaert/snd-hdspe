@@ -572,6 +572,7 @@ static void hdspe_raio_read_status(struct hdspe* hdspe,
 	}
 }
 
+#ifdef OLDSTUFF
 static bool hdspe_raio_has_status_changed(struct hdspe* hdspe)
 {
 	__le32 status1 = hdspe_read_status1(hdspe).raw;
@@ -596,6 +597,7 @@ static bool hdspe_raio_has_status_changed(struct hdspe* hdspe)
 	hdspe->t.fbits = fbits;
 	return changed;
 }
+#endif /*OLDSTUFF*/
 
 static void hdspe_raio_set_float_format(struct hdspe* hdspe, bool val)
 {
@@ -655,6 +657,7 @@ static enum hdspe_clock_source hdspe_raio_get_autosync_ref(struct hdspe* hdspe)
 	return ref;
 }
 
+#ifdef OLDSTUFF
 static enum hdspe_sync_status hdspe_raio_get_sync_status(
 	struct hdspe* hdspe, enum hdspe_clock_source src)
 {
@@ -734,11 +737,11 @@ static enum hdspe_freq hdspe_raio_get_external_freq(struct hdspe* hdspe)
 	return hdspe_speed_adapt(hdspe_raio_get_freq(hdspe, src),
 				 hdspe_speed_mode(hdspe));
 }
+#endif /*OLDSTUFF*/
 
 static void hdspe_raio_proc_read(struct snd_info_entry *entry,
 				 struct snd_info_buffer *buffer)
 {
-	int i;
 	struct hdspe *hdspe = entry->private_data;
 	struct hdspe_status s;
 
@@ -812,31 +815,7 @@ static void hdspe_raio_proc_read(struct snd_info_entry *entry,
 		hdspe_iprint_fbits(buffer, "FBITS", fbits);
 	}
 
-	{
-		union hdspe_status0_reg status0 = hdspe_read_status0(hdspe);
-		snd_iprintf(buffer, "\n");
-		snd_iprintf(buffer, "BUF_PTR\t: %05d\nBUF_ID\t: %d\n",
-			    le16_to_cpu(status0.common.BUF_PTR)<<6,
-			    status0.common.BUF_ID);
-		snd_iprintf(buffer, "LAT\t: %d\n", hdspe->reg.control.common.LAT);
-	}
-	
-	snd_iprintf(buffer, "\n");
-	snd_iprintf(buffer, "Running     \t: %d\n", hdspe->running);
-	snd_iprintf(buffer, "Capture PID \t: %d\n", hdspe->capture_pid);
-	snd_iprintf(buffer, "Playback PID\t: %d\n", hdspe->playback_pid);
-	
-	snd_iprintf(buffer, "\n");
-	snd_iprintf(buffer, "Capture channel mapping:\n");
-	for (i = 0 ; i < hdspe->max_channels_in; i ++) {
-		snd_iprintf(buffer, "Logical %d DMA %d '%s'\n",
-			    i, hdspe->channel_map_in[i], hdspe->port_names_in[i]);
-	}
-	snd_iprintf(buffer, "\nPlayback channel mapping:\n");
-	for (i = 0 ; i < hdspe->max_channels_out; i ++) {
-		snd_iprintf(buffer, "Logical %d DMA %d '%s'\n",
-			    i, hdspe->channel_map_out[i], hdspe->port_names_out[i]);
-	}
+	hdspe_proc_read_common2(buffer, hdspe, &s);
 }
 
 static void hdspe_raio_get_card_info(struct hdspe* hdspe,
@@ -857,15 +836,19 @@ static const struct hdspe_methods hdspe_raio_methods = {
 	.get_float_format = hdspe_raio_get_float_format,
 	.set_float_format = hdspe_raio_set_float_format,
 	.read_proc = hdspe_raio_proc_read,
+#ifdef OLDSTUFF	
 	.get_freq = hdspe_raio_get_freq,
-	.get_autosync_ref = hdspe_raio_get_autosync_ref,
 	.get_external_freq = hdspe_raio_get_external_freq,
+#endif /*OLDSTUFF*/
+	.get_autosync_ref = hdspe_raio_get_autosync_ref,
 	.get_clock_mode = hdspe_raio_get_clock_mode,
 	.set_clock_mode = hdspe_raio_set_clock_mode,
 	.get_pref_sync_ref = hdspe_raio_get_preferred_sync_ref,
 	.set_pref_sync_ref = hdspe_raio_set_preferred_sync_ref,
+#ifdef OLDSTUFF
 	.get_sync_status = hdspe_raio_get_sync_status,
 	.has_status_changed = hdspe_raio_has_status_changed
+#endif /*OLDSTUFF*/
 };
 
 static const struct hdspe_tables hdspe_raydat_tables = {

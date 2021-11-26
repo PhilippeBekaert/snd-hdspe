@@ -102,6 +102,38 @@ void hdspe_proc_read_common(struct snd_info_buffer *buffer,
 	snd_iprintf(buffer, "\n");
 }
 
+void hdspe_proc_read_common2(struct snd_info_buffer *buffer,
+			     struct hdspe* hdspe,
+			     struct hdspe_status* s)
+{
+	int i;
+	
+	union hdspe_status0_reg status0 = hdspe_read_status0(hdspe);
+	snd_iprintf(buffer, "\n");
+	snd_iprintf(buffer, "BUF_PTR\t: %05d\nBUF_ID\t: %d\nID_PTR\t: %05d\n",
+		    le16_to_cpu(status0.common.BUF_PTR)<<6,
+		    status0.common.BUF_ID,
+		    status0.common.BUF_ID * s->buffer_size*4);
+	snd_iprintf(buffer, "LAT\t: %d\n", hdspe->reg.control.common.LAT);
+	
+	snd_iprintf(buffer, "\n");
+	snd_iprintf(buffer, "Running     \t: %d\n", hdspe->running);
+	snd_iprintf(buffer, "Capture PID \t: %d\n", hdspe->capture_pid);
+	snd_iprintf(buffer, "Playback PID\t: %d\n", hdspe->playback_pid);
+	
+	snd_iprintf(buffer, "\n");
+	snd_iprintf(buffer, "Capture channel mapping:\n");
+	for (i = 0 ; i < hdspe->max_channels_in; i ++) {
+		snd_iprintf(buffer, "Logical %d DMA %d '%s'\n",
+			    i, hdspe->channel_map_in[i], hdspe->port_names_in[i]);
+	}
+	snd_iprintf(buffer, "\nPlayback channel mapping:\n");
+	for (i = 0 ; i < hdspe->max_channels_out; i ++) {
+		snd_iprintf(buffer, "Logical %d DMA %d '%s'\n",
+			    i, hdspe->channel_map_out[i], hdspe->port_names_out[i]);
+	}
+}
+
 static void snd_hdspe_proc_ports_in(struct snd_info_entry *entry,
 			  struct snd_info_buffer *buffer)
 {

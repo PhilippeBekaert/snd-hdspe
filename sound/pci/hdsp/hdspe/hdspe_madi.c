@@ -190,11 +190,13 @@ static void hdspe_madi_read_status(struct hdspe* hdspe,
 	status->madi.rx_64ch = status0.rx_64ch;
 }
 
+#ifdef OLDSTUFF
 static bool hdspe_madi_has_status_changed(struct hdspe* hdspe)
 {
 	dev_dbg(hdspe->card->dev, "%s TODO\n", __func__);
 	return false;
 }
+#endif /*OLDSTUFF*/
 
 /* set 32-bit float sample format if val is true, s32le format if false */
 static void hdspe_madi_set_float_format(struct hdspe* hdspe, bool val)
@@ -246,6 +248,7 @@ static enum hdspe_clock_source hdspe_madi_get_autosync_ref(struct hdspe* hdspe)
 	return madi_autosync_ref[hdspe_read_status2(hdspe).madi.sync_ref];
 }
 
+#ifdef OLDSTUFF
 static enum hdspe_sync_status hdspe_madi_get_sync_status(
 	struct hdspe* hdspe, enum hdspe_clock_source src)
 {
@@ -259,6 +262,7 @@ static enum hdspe_freq hdspe_madi_get_freq(
 	dev_warn(hdspe->card->dev, "hdspe_madi_get_freq todo");
 	return HDSPE_FREQ_NO_LOCK;	
 }
+#endif /*OLDSTUFF*/
 
 static enum hdspe_freq hdspe_madi_get_external_freq(struct hdspe* hdspe)
 {
@@ -423,15 +427,19 @@ static const struct hdspe_methods hdspe_madi_methods = {
 	.get_float_format = hdspe_madi_get_float_format,
 	.set_float_format = hdspe_madi_set_float_format,
 	.read_proc = hdspe_madi_proc_read,
+#ifdef OLDSTUFF
 	.get_freq = hdspe_madi_get_freq,
-	.get_autosync_ref = hdspe_madi_get_autosync_ref,
 	.get_external_freq = hdspe_madi_get_external_freq,
+#endif /*OLDSTUFF*/
+	.get_autosync_ref = hdspe_madi_get_autosync_ref,
 	.get_clock_mode = hdspe_madi_get_clock_mode,
 	.set_clock_mode = hdspe_madi_set_clock_mode,
 	.get_pref_sync_ref = hdspe_madi_get_preferred_sync_ref,
 	.set_pref_sync_ref = hdspe_madi_set_preferred_sync_ref,
+#ifdef OLDSTUFF
 	.get_sync_status = hdspe_madi_get_sync_status,
 	.has_status_changed = hdspe_madi_has_status_changed
+#endif /*OLDSTUFF*/
 };
 
 static const struct hdspe_tables hdspe_madi_tables = {

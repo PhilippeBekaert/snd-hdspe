@@ -24,6 +24,7 @@ The access values in the tables below are a combination of the following symbols
 | W | Control element is writable |
 | V | Control element is volatile |
 
+
 Controls common to all supported cards
 --------------------------------------
 
@@ -40,13 +41,12 @@ Controls common to all supported cards
 | CARD | Status Polling | RW | Int | See below **Status Polling**            | 
 | HWDEP | DDS | RW | Int | See below **DDS**            | 
 | HWDEP | Raw Sample Rate | RV | Int64 | See below **DDS**            | 
-| CARD | Internal Frequency | RW | Enum | Internal sampling rate class: 32 KHz, 44.1 KHz, 48 KHz etc....           | 
-| CARD | Current AutoSync Reference | RV | Enum | Current clock source.            | 
-| CARD | External Frequency | RV | Enum | Current external sampling rate.            | 
 | CARD | Clock Mode | RW | Enum | Master or AutoSync.            | 
 | CARD | Preferred AutoSync Reference | RW | Enum | Preferred clock source, if in AutoSync mode.            | 
+| CARD | Current AutoSync Reference | RV | Enum | Current clock source. | 
 | CARD | AutoSync Status | RV | Enum | AutoSync clock status: N/A, No Lock, Lock or Sync, for all sources.            | 
-| CARD | AutoSync Frequency | RV | Enum | Current clock source sample rate class, for all sources.            | 
+| CARD | AutoSync Frequency | RV | Enum | Current clock source sample rate class, for all sources: 32 KHz, 44.1 KHz, 48 KHz, 64 KHz, 88.2 KHz, 96 KHz, 128 KHz 176.4 KHz 192 KHz | 
+| CARD | Internal Frequency | RW | Enum | Internal sampling rate class: 32 KHz, 44.1 KHz, 48 KHz etc....           | 
 
 **Status Polling**
 
@@ -74,6 +74,7 @@ The "DDS" control element enables setting the DDS register, determining internal
 with same numerator as the "Raw Sample Rate" control element, i.o.w. the numerator is the first value
 of the "Raw Sample Rate" control element.
 This can be used to synchronise the cards internal clock to e.g. a system clock.
+
 
 TCO controls
 ------------
@@ -179,6 +180,40 @@ running at 44.1 KHz, and 48 KHz otherwise (the TCO does not support 32 KHz
 sample rate).
 
 
+AES controls:
+-------------
+
+| Interface | Name | Access | Value Type | Description |
+| :- | :- | :- | :- | :- |
+| CARD | Double Speed Mode | RW | Enum | Double speed mode: Single Wire or Double Wire |
+| CARD | Quad Speed Mode | RW | Enum | Quad speed mode: Single Wire, Double Wire or Quad Wire | 
+| CARD | Professional | RW | Bool | | 
+| CARD | Emphasis | RW | Bool | | 
+| CARD | Non Audio | RW | Bool | (dolby), AC3 |
+| CARD | Line Out | RW | Bool | |
+| CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
+| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
+
+
+AIO controls
+------------
+
+| Interface | Name | Access | Value Type | Description |
+| :- | :- | :- | :- | :- |
+| CARD | Input Level | RW | Enum | Analog audio input reference level: -10 dBV (with 12 dB headroom), +4 dBu (with 9dB headroom), Lo Gain (+4 dBu with 15 dB headroom) | 
+| CARD | Output Level | RW | Enum | Analog audio output reference level: -10 dBV (with 12 dB headroom), +4 dBu (with 9dB headroom), Hi Gain (+4 dBu with 15 dB headroom) | 
+| CARD | XLR Breakout Cable | RW | Enum | Analog output breakout cable: XLR or RCA. -6 dB gain correction on XLR for correct reference level |
+| CARD | Phones Level | RW | Enum | Headphones output level: same options as Output Level | 
+| CARD | S/PDIF In | RW | Enum | S/PDIF input connector: coaxial, optical or internal | 
+| CARD | S/PDIF Out Optical | RW | Bool | Output S/PDIF over TOSLINK | 
+| CARD | S/PDIF Out Professional | RW | Bool | Output professional mode S/PDIF | 
+| CARD | ADAT Internal | RW | Bool | Use the internal connector for ADAT, with AEB or TEB expansion board | 
+| CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
+| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
+| CARD | AO4S Present | RO | Bool | AO4S-192 analog output extension board present |
+| CARD | AI4S Present | RO | Bool | AI4S-192 analog input extension board present |
+
+
 AIO Pro controls
 ----------------
 
@@ -204,23 +239,8 @@ Full scale PCM output data for analog output corresponds to +4, +13, +19 or +24 
 cable), or -2, +4, +13 or +19 dBu level if outputting unbalanced audio (using the RCA breakout cable).
 
 
-AIO controls
-------------
-
-| Interface | Name | Access | Value Type | Description |
-| :- | :- | :- | :- | :- |
-| CARD | Input Level | RW | Enum | Analog audio input reference level: -10 dBV (with 12 dB headroom), +4 dBu (with 9dB headroom), Lo Gain (+4 dBu with 15 dB headroom) | 
-| CARD | Output Level | RW | Enum | Analog audio output reference level: -10 dBV (with 12 dB headroom), +4 dBu (with 9dB headroom), Hi Gain (+4 dBu with 15 dB headroom) | 
-| CARD | XLR Breakout Cable | RW | Enum | Analog output breakout cable: XLR or RCA. -6 dB gain correction on XLR for correct reference level |
-| CARD | Phones Level | RW | Enum | Headphones output level: same options as Output Level | 
-| CARD | S/PDIF In | RW | Enum | S/PDIF input connector: coaxial, optical or internal | 
-| CARD | S/PDIF Out Optical | RW | Bool | Output S/PDIF over TOSLINK | 
-| CARD | S/PDIF Out Professional | RW | Bool | Output professional mode S/PDIF | 
-| CARD | ADAT Internal | RW | Bool | Use the internal connector for ADAT, with AEB or TEB expansion board | 
-| CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
-| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
-| CARD | AO4S Present | RO | Bool | AO4S-192 analog output extension board present |
-| CARD | AI4S Present | RO | Bool | AI4S-192 analog input extension board present |
+MADI controls
+-------------
 
 
 RayDAT controls
@@ -235,4 +255,3 @@ RayDAT controls
 | CARD | ADAT2 Internal | RW | Bool | Use the internal ADAT2 connector instead of optical, for AEB or TEB expansion board | 
 | CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
 | CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
-
