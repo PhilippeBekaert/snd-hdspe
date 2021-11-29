@@ -400,6 +400,10 @@ static int snd_hdspe_create(struct hdspe *hdspe)
 			PCI_CLASS_REVISION, &hdspe->firmware_rev);
 	hdspe->vendor_id = pci->vendor;
 
+	dev_dbg(card->dev,
+		"PCI vendor %04x, device %04x, class revision %x\n",
+		pci->vendor, pci->device, hdspe->firmware_rev);
+	
 	strcpy(card->mixername, "RME HDSPe");
 	strcpy(card->driver, "HDSPe");
 
@@ -417,6 +421,14 @@ static int snd_hdspe_create(struct hdspe *hdspe)
 	err = pci_enable_device(pci);
 	if (err < 0)
 		return err;
+
+	err = pci_set_dma_mask(pci, DMA_BIT_MASK(32));
+	if (!err)
+		err = pci_set_consistent_dma_mask(pci, DMA_BIT_MASK(32));
+	if (err != 0) {
+		dev_err(card->dev, "No suitable DMA addressing support.\n");
+		return -ENODEV;
+	}
 
 	pci_set_master(hdspe->pci);
 

@@ -826,20 +826,11 @@ struct hdspe_methods {
 	void (*set_float_format)(struct hdspe* hdspe, bool val);
 	bool (*get_float_format)(struct hdspe* hdspe);
 	void (*read_proc)(struct snd_info_entry*, struct snd_info_buffer*);
-#ifdef OLDSTUFF
-	enum hdspe_freq (*get_freq)(struct hdspe*, enum hdspe_clock_source);
-	enum hdspe_freq (*get_external_freq)(struct hdspe*);
-#endif /*OLDSTUFF*/
 	enum hdspe_clock_source (*get_autosync_ref)(struct hdspe*);
 	enum hdspe_clock_mode (*get_clock_mode)(struct hdspe*);
 	void (*set_clock_mode)(struct hdspe*, enum hdspe_clock_mode);
 	enum hdspe_clock_source (*get_pref_sync_ref)(struct hdspe*);
 	void (*set_pref_sync_ref)(struct hdspe*, enum hdspe_clock_source);
-#ifdef OLDSTUFF
-	enum hdspe_sync_status (*get_sync_status)(struct hdspe*,
-						  enum hdspe_clock_source);
-	bool (*has_status_changed)(struct hdspe* hdspe);
-#endif /*OLDSTUFF*/
 };
 
 /**
@@ -1013,6 +1004,8 @@ struct hdspe {
 	u64 frame_count;            /* current period frame counter */
 	u32 hw_pointer_wrap_count;  /* hw pointer wrapped this many times */
 	u32 last_hw_pointer;        /* previous period hw pointer */
+	u32 hw_buffer_size;         /* sample buffer size, in nr of samples */
+	u32 period_size;            /* current period size, in nr of samples */
 };
 
 

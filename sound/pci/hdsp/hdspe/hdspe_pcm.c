@@ -41,12 +41,11 @@ static int snd_hdspe_preallocate_memory(struct hdspe *hdspe)
 	pcm = hdspe->pcm;
 
 	wanted = HDSPE_DMA_AREA_BYTES;
-	/* TODO: set 32-bit DMA mask */
 
 	snd_pcm_lib_preallocate_pages_for_all(pcm, SNDRV_DMA_TYPE_DEV_SG,
 					      &hdspe->pci->dev,
 					      wanted, wanted);
-	dev_dbg(hdspe->card->dev, " Preallocated %zd Bytes\n", wanted);
+	dev_dbg(hdspe->card->dev, "Preallocated %zd Bytes for DMA.\n", wanted);
 	return 0;
 }
 
@@ -83,47 +82,6 @@ static inline void snd_hdspe_enable_out(struct hdspe * hdspe, int i, int v)
 
 /* ------------------------------------------------------- */
 
-/* Return hardware buffer pointer in samples (always 4 bytes) */
-snd_pcm_uframes_t hdspe_hw_pointer(struct hdspe *hdspe)
-{
-	switch (hdspe->io_type) {
-	case HDSPE_RAYDAT:
-	case HDSPE_AIO:
-	case HDSPE_AIO_PRO:		
-		// (BUF_PTR << 6) bytes / 4 bytes per sample
-		return le16_to_cpu(hdspe->reg.status0.common.BUF_PTR) << 4;
-
-	default:
-		return hdspe->reg.status0.common.BUF_ID
-			* hdspe_period_size(hdspe);
-	}
-#ifdef OLDSTUFF	
-	int position;
-
-	position = hdspe_read(hdspe, HDSPE_RD_STATUS0);
-
-	switch (hdspe->io_type) {
-	case HDSPE_RAYDAT:
-	case HDSPE_AIO:
-	case HDSPE_AIO_PRO:		
-		position &= HDSPE_BufferPositionMask;
-		position /= 4; /* Bytes per sample */
-		break;
-	default:
-		position = (position & HDSPE_BufferID) ?
-		  (hdspe->period_bytes / 4) : 0; // hdspe_period_size(hdspe)
-	}
-
-	return position;
-#endif /*OLDSTUFF*/	
-}
-
-static u32 hdspe_hw_buffer_size(struct hdspe* hdspe)
-{
-	return (1<<16) / 4;   /* 16-bit pointer (only 10 msb in status reg),
-			       * 4 bytes per sample */
-}
-
 /**
  * Returns true if the card is a RayDAT / AIO / AIO Pro 
  */
@@ -150,6 +108,15 @@ u32 hdspe_period_size(struct hdspe *hdspe)
 		n = -1;
 
 	return 1 << (n + 6);
+}
+
+/* Sets hdspe->period_size and hdspe->hw_buffer_size according to the
+ * current latency setting in the control register. */
+static void hdspe_set_period_size(struct hdspe* hdspe)
+{
+	hdspe->period_size = hdspe_period_size(hdspe);
+	hdspe->hw_buffer_size = hdspe_is_raydat_or_aio(hdspe) ? ((1<<16)/4)
+	  : 2 * hdspe->period_size;  
 }
 
 static int hdspe_set_interrupt_interval(struct hdspe *hdspe, unsigned int frames)
@@ -182,6 +149,8 @@ static int hdspe_set_interrupt_interval(struct hdspe *hdspe, unsigned int frames
 	hdspe->reg.control.common.LAT = n;
 	hdspe_write_control(hdspe);
 
+	hdspe_set_period_size(hdspe);
+
 	spin_unlock_irq(&hdspe->lock);
 
 	snd_ctl_notify(hdspe->card, SNDRV_CTL_EVENT_MASK_VALUE,
@@ -190,37 +159,45 @@ static int hdspe_set_interrupt_interval(struct hdspe *hdspe, unsigned int frames
 	return 0;
 }
 
+/* Return hardware buffer pointer in samples (always 4 bytes) */
+snd_pcm_uframes_t hdspe_hw_pointer(struct hdspe *hdspe)
+{
+	/* (BUF_PTR << 6) bytes / 4 bytes per sample */
+	return (le16_to_cpu(hdspe->reg.status0.common.BUF_PTR) << 4)
+		& (hdspe->hw_buffer_size - 1);
+}
+
 /* Called right from the interrupt handler in order to update the frame
  * counter. In absence of xruns, the frame counter increments by
  * hdspe_period_size() frames each period. This routine will correctly
  * determine the frame counter even in the presence of xruns or late
  * interrupt handling, as long as the hardware pointer did not wrap more 
  * than once since the previous invocation. The hardware pointer wraps every 
- * 16K frames, so about 3 times a second at 48 KHz sampling rate. */
+ * 16K frames on a RayDAT/AIO/AIO Pro, so about 3 times a second at 48 KHz 
+ * sampling rate. On a AES or MADI, the hardware buffer is only 2 period
+ * sizes. */
 void hdspe_update_frame_count(struct hdspe* hdspe)
 {
 	u32 hw_pointer;
 
-	spin_lock(&hdspe->lock);
 	hw_pointer = hdspe_hw_pointer(hdspe);
 	if (hw_pointer < hdspe->last_hw_pointer)
 		hdspe->hw_pointer_wrap_count ++;
 	hdspe->last_hw_pointer = hw_pointer;
 
 	hdspe->frame_count =
-		(u64)hdspe->hw_pointer_wrap_count * hdspe_hw_buffer_size(hdspe)
-		+ (hw_pointer & ~(hdspe_period_size(hdspe) - 1));
-	spin_unlock(&hdspe->lock);
+		(u64)hdspe->hw_pointer_wrap_count * hdspe->hw_buffer_size
+		+ (hw_pointer & ~(hdspe->period_size - 1));
 	
-#ifdef NEVER
+#ifdef DEBUG_FRAME_COUNT
 	{
 		static u64 last_frame_count =0;
-		dev_dbg(hdspe->card->dev, "%s: frame_count=%llu, delta=%llu\n",
-			__func__, hdspe->frame_count,
+		dev_dbg(hdspe->card->dev, "%s: hw_pointer=%u, frame_count=%llu, delta=%llu\n",
+			__func__, hw_pointer, hdspe->frame_count,
 			hdspe->frame_count - last_frame_count);
 		last_frame_count = hdspe->frame_count;
 	}
-#endif /*NEVER*/
+#endif /*DEBUG_FRAME_COUNT*/
 }
 
 static inline void hdspe_start_audio(struct hdspe * s)
@@ -243,7 +220,7 @@ static inline void hdspe_stop_audio(struct hdspe * s)
 static void hdspe_silence_playback(struct hdspe *hdspe)
 {
 	int i;
-	int n = hdspe_period_size(hdspe) * 4;
+	int n = hdspe->period_size * 4;
 	void *buf = hdspe->playback_buffer;
 
 	if (!buf)
@@ -340,12 +317,12 @@ static int snd_hdspe_hw_params(struct snd_pcm_substream *substream,
 			return -EBUSY;
 		}
 
-		if (params_period_size(params) != hdspe_period_size(hdspe)) {
+		if (params_period_size(params) != hdspe->period_size) {
 			spin_unlock_irq(&hdspe->lock);
 			dev_warn(hdspe->card->dev,
  "Requested period size %d does not match actual latency used by process %d.\n",
 				 params_period_size(params),
-				 hdspe_period_size(hdspe));
+				 hdspe->period_size);
 			_snd_pcm_hw_param_setempty(params,
 					SNDRV_PCM_HW_PARAM_PERIOD_SIZE);
 			return -EBUSY;
@@ -984,6 +961,8 @@ int snd_hdspe_create_pcm(struct snd_card *card,
 	err = snd_hdspe_preallocate_memory(hdspe);
 	if (err < 0)
 		return err;
+
+	hdspe_set_period_size(hdspe);
 
 	return 0;
 }

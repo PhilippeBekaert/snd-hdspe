@@ -13,8 +13,8 @@
 // TODO:
 // - Double Wire / Quad Wire mode: fewer channels.
 // - FormatAC3
-// - Buffer pointer
 // - status2 AES mode ???
+// - WCLK termination
 
 #include "hdspe.h"
 #include "hdspe_core.h"

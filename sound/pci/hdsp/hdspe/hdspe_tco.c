@@ -565,6 +565,12 @@ void hdspe_tco_mtc(struct hdspe* hdspe, const u8* buf, int count)
 
 	if (newtc) {
 		uint64_t now = ktime_get_real_ns();
+#ifdef DEBUG_LTC		
+		struct hdspe_ltc ltc;
+		hdspe_tco_read_ltc(hdspe, &ltc, __func__);
+#endif /*DEBUG_LTC*/
+
+		spin_lock(&hdspe->tco->lock);
 		if (c->prev_ltc_time > 0) {
 			int n = c->ltc_count % LTC_CACHE_SIZE;
 			c->ltc_duration_sum -= c->ltc_duration[n];
@@ -574,13 +580,6 @@ void hdspe_tco_mtc(struct hdspe* hdspe, const u8* buf, int count)
 		c->prev_ltc_time = now;
 		c->ltc_count ++;
 		
-#ifdef DEBUG_LTC		
-		struct hdspe_ltc ltc;
-#endif /*DEBUG_LTC*/		
-		spin_lock(&hdspe->tco->lock);
-#ifdef DEBUG_LTC
-		hdspe_tco_read_ltc(hdspe, &ltc, __func__);
-#endif /*DEBUG_LTC*/
 		hdspe->tco->ltc_changed = true;		
 		spin_unlock(&hdspe->tco->lock);
 	}
@@ -604,11 +603,13 @@ void hdspe_tco_period_elapsed(struct hdspe* hdspe)
 		hdspe_tco_read_ltc(hdspe, &ltc, __func__);
 
 		/* Add 1 frame, which is correct if running forward. 
-  		 * The windows driver does that too. */
+  		 * (The windows driver does that too.) */
 		ltc.tc = hdspe_ltc32_incr(ltc.tc, ltc.fps, ltc.df);
 
 		c->ltc_in = ltc.tc;
 		c->ltc_in_frame_count = ltc.fc;
+		//		if (hdspe->period_size >= 2048)
+		//		  c->ltc_in_frame_count -= hdspe->period_size / 2;
 		
 		snd_ctl_notify(hdspe->card, SNDRV_CTL_EVENT_MASK_VALUE,
 		               hdspe->cid.ltc_in);

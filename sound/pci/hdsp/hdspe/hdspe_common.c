@@ -224,9 +224,9 @@ int hdspe_write_internal_freq(struct hdspe* hdspe, enum hdspe_freq f)
 static u64 freq_const[HDSPE_IO_TYPE_COUNT] = {
 	110069313433624ULL,   // MADI
 	131072000000000ULL,   // MADIface
+	104857600000000ULL,   // AIO
 	110069313433624ULL,   // AES
 	104857600000000ULL,   // RayDAT
-	104857600000000ULL,   // AIO
 	104857600000000ULL    // AIO Pro
 };
 
