@@ -45,7 +45,7 @@ Controls common to all supported cards
 | CARD | Preferred AutoSync Reference | RW | Enum | Preferred clock source, if in AutoSync mode.            | 
 | CARD | Current AutoSync Reference | RV | Enum | Current clock source. | 
 | CARD | AutoSync Status | RV | Enum | AutoSync clock status: N/A, No Lock, Lock or Sync, for all sources.            | 
-| CARD | AutoSync Frequency | RV | Enum | Current clock source sample rate class, for all sources: 32 KHz, 44.1 KHz, 48 KHz, 64 KHz, 88.2 KHz, 96 KHz, 128 KHz 176.4 KHz 192 KHz | 
+| CARD | AutoSync Frequency | RV | Enum | Current clock source sample rate class, for all sources: 32 KHz, 44.1 KHz, 48 KHz, 64 KHz, 88.2 KHz, 96 KHz, 128 KHz 176.4 KHz 192 KHz. Note: MADI cards only report this for the MADI input and not for the other sources. | 
 | CARD | Internal Frequency | RW | Enum | Internal sampling rate class: 32 KHz, 44.1 KHz, 48 KHz etc....           | 
 
 **Status Polling**
@@ -227,7 +227,7 @@ AIO Pro controls
 | CARD | S/PDIF Out Professional | RW | Bool | Output professional mode S/PDIF | 
 | CARD | ADAT Internal | RW | Bool | Use the internal connector for ADAT, with AEB or TEB expansion board | 
 | CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
-| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
+| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. |
 
 **Input level**
 
@@ -242,6 +242,19 @@ cable), or -2, +4, +13 or +19 dBu level if outputting unbalanced audio (using th
 MADI controls
 -------------
 
+| Interface | Name | Access | Value Type | Description |
+| :- | :- | :- | :- | :- |
+| CARD | External Frequency | RV | Enum | Frequency class of the current autosync reference: 32KHz, 44.1KHz, 48KHz, etc... (MADI cards do not report the frequency class of each autosync reference individually, like other cards do.) |
+| CARD | Preferred Input | RW | Enum | Preferred MADI input: Optical, Coaxial |
+| CARD | Autoselect Input | RW | Bool | Whether or not to automatically switch over input if preferred input is not available (a.k.a. safe mode) |
+| CARD | Current Input | RV | Enum | Current MADI input: Optical, Coaxial |
+| CARD | RX 64 Channels Mode | RV | Bool | Whether or not we're currently receiving 64 channels mode (true) or 56 channels mode (false) MADI input |
+| CARD | TX 64 Channels Mode | RW | Bool | Transmit 64 channels mode (true) or 56 channels mode (false) |
+| CARD | Double Wire Mode | RW | Bool | Double speed mode: 48K frame mode (= S/MUX or double wire mode) if true, 96K frame (single wire) mode if false |
+| CARD | Line Out | RW | Bool | Enable/disable headphone output |
+| CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
+| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from MADI audio samples. If not set, these bits are available as the least significant bits of PCM data. |
+
 
 RayDAT controls
 ---------------
@@ -254,4 +267,4 @@ RayDAT controls
 | CARD | ADAT1 Internal | RW | Bool | Use the internal ADAT1 connector instead of optical, for AEB or TEB expansion board | 
 | CARD | ADAT2 Internal | RW | Bool | Use the internal ADAT2 connector instead of optical, for AEB or TEB expansion board | 
 | CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
-| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
+| CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. |

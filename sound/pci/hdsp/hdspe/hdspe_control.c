@@ -170,15 +170,6 @@ void hdspe_status_work(struct work_struct *work)
 		changed = true;
 	}
 
-#ifdef OLDSTUFF	
-	if (n.external_freq != o.external_freq && hdspe->cid.external_freq) {
-		dev_dbg(hdspe->card->dev, "external freq changed %d -> %d.\n",
-			o.external_freq, n.external_freq);		
-		HDSPE_CTL_NOTIFY(external_freq);
-		changed = true;
-	}
-#endif /*OLDSTUFF*/
-
 	sr_delta = (int64_t)n.sample_rate_denominator
 		 - (int64_t)o.sample_rate_denominator;
 	if (n.sample_rate_numerator != o.sample_rate_numerator ||
@@ -192,7 +183,9 @@ void hdspe_status_work(struct work_struct *work)
 		changed = true;
 	}
 
-	// TODO: madi / aes specific status changes
+	if (hdspe->m.check_status_change &&
+	    hdspe->m.check_status_change(hdspe, &o, &n))
+		changed = true;
 
 	if (hdspe->tco && hdspe_tco_notify_status_change(hdspe)) {
 		changed = true;
@@ -353,12 +346,6 @@ static int snd_hdspe_get_autosync_status(struct snd_kcontrol *kcontrol,
 	struct hdspe* hdspe = snd_kcontrol_chip(kcontrol);
 	int i;
 
-#ifdef OLDSTUFF	
-	for (i=0; i<hdspe->t.autosync_count-1; i++) {
-		int ref = hdspe->t.autosync_idx2ref[i];
-		ucontrol->value.enumerated.item[i] = hdspe->m.get_sync_status(hdspe, ref);
-	}
-#endif /*OLDSTUFF*/
 	struct hdspe_status s;
 	hdspe->m.read_status(hdspe, &s);
 	for (i=0; i<hdspe->t.autosync_count-1; i++) {
@@ -405,12 +392,6 @@ static int snd_hdspe_get_autosync_freq(struct snd_kcontrol *kcontrol,
 	struct hdspe* hdspe = snd_kcontrol_chip(kcontrol);
 	int i;
 
-#ifdef OLDSTUFF	
-	for (i=0; i<hdspe->t.autosync_count-1; i++) {
-		int ref = hdspe->t.autosync_idx2ref[i];
-		ucontrol->value.enumerated.item[i] = hdspe->m.get_freq(hdspe, ref);
-	}
-#endif /*OLDSTUFF*/
 	struct hdspe_status s;
 	hdspe->m.read_status(hdspe, &s);
 	for (i=0; i<hdspe->t.autosync_count-1; i++) {
@@ -420,24 +401,6 @@ static int snd_hdspe_get_autosync_freq(struct snd_kcontrol *kcontrol,
 	
 	return 0;
 }
-
-#ifdef OLDSTUFF
-/* --------------- External frequency --------------- */
-
-static int snd_hdspe_info_external_freq(struct snd_kcontrol *kcontrol,
-					struct snd_ctl_elem_info *uinfo)
-{
-	ENUMERATED_CTL_INFO(uinfo, texts_freq);
-	return 0;
-}
-
-static enum hdspe_freq hdspe_get_external_freq(struct hdspe* hdspe)
-{
-	return hdspe->m.get_external_freq(hdspe);
-}
-
-HDSPE_RO_ENUM_METHODS(external_freq, hdspe_get_external_freq);
-#endif /*OLDSTUFF*/
 
 /* ---------------- Internal frequency ------------------ */
 
@@ -477,10 +440,11 @@ HDSPE_RW_ENUM_METHODS(internal_freq,
 
 HDSPE_RW_ENUM_REG_METHODS(madi_sswclk, control, madi, WCK48, false)
 HDSPE_RW_ENUM_REG_METHODS(madi_LineOut, control, madi, LineOut, false)
+HDSPE_RW_ENUM_REG_METHODS(madi_clr_tms, control, madi, CLR_TMS, false)
 HDSPE_RW_ENUM_REG_METHODS(madi_tx_64ch, control, madi, tx_64ch, false)
 HDSPE_RO_ENUM_REG_METHODS(madi_rx_64ch, status0, madi, rx_64ch)
+#define snd_hdspe_info_madi_rx_64ch snd_ctl_boolean_mono_info
 HDSPE_RW_ENUM_REG_METHODS(madi_smux, control, madi, SMUX, false)
-HDSPE_RW_ENUM_REG_METHODS(madi_clr_tms, control, madi, CLR_TMS, false)
 HDSPE_RW_ENUM_REG_METHODS(madi_autoinput, control, madi, AutoInp, false)
 	
 static int snd_hdspe_info_madi_input_source(struct snd_kcontrol *kcontrol,
@@ -497,6 +461,21 @@ static int snd_hdspe_info_madi_input_source(struct snd_kcontrol *kcontrol,
 
 HDSPE_RW_ENUM_REG_METHODS(madi_input_select, control, madi, inp_0, false)
 HDSPE_RO_ENUM_REG_METHODS(madi_input_source, status0, madi, AB_int)
+
+static int snd_hdspe_info_external_freq(struct snd_kcontrol *kcontrol,
+					struct snd_ctl_elem_info *uinfo)
+{
+	ENUMERATED_CTL_INFO(uinfo, texts_freq);
+	return 0;
+}
+
+static enum hdspe_freq hdspe_get_external_freq(struct hdspe* hdspe)
+{
+	return hdspe_madi_get_external_freq(hdspe);
+}
+
+HDSPE_RO_ENUM_METHODS(external_freq, hdspe_get_external_freq);
+
 
 /* ------------------------ AES specific ------------------- */
 
@@ -682,24 +661,13 @@ static const struct snd_kcontrol_new snd_hdspe_controls_common[] = {
 };
 
 static const struct snd_kcontrol_new snd_hdspe_controls_madi[] = {
-#ifdef OLDSTUFF
-	// TODO
-	HDSPE_SYNC_STATUS("WordClk Status", HDSPE_CLOCK_SOURCE_WORD),
-	HDSPE_SYNC_STATUS("MADI Status", HDSPE_CLOCK_SOURCE_MADI),
-	HDSPE_SYNC_STATUS("TCO Status", HDSPE_CLOCK_SOURCE_TCO),
-	HDSPE_SYNC_STATUS("SyncIn Status", HDSPE_CLOCK_SOURCE_SYNC_IN),
-	HDSPE_SYNC_FREQ("MADI Frequency", HDSPE_CLOCK_SOURCE_MADI),
-#endif /*OLDSTUFF*/
-	HDSPE_RW_BOOL_KCTL(CARD, "Single Speed WordClk Out", madi_sswclk),
-	HDSPE_RW_BOOL_KCTL(CARD, "Line Out", madi_LineOut),
 	HDSPE_RW_BOOL_KCTL(CARD, "TX 64 Channels Mode", madi_tx_64ch),
-	HDSPE_RV_BOOL_KCTL(CARD, "RX 64 Channels Mode", madi_rx_64ch),
 	HDSPE_RW_BOOL_KCTL(CARD, "Double Wire Mode", madi_smux),
-	HDSPE_RW_BOOL_KCTL(CARD, "Clear Track Marker", madi_clr_tms),
-	HDSPE_RW_BOOL_KCTL(CARD, "Safe Mode", madi_autoinput),
-	HDSPE_RW_KCTL(CARD, "Input Select", madi_input_select),
-	HDSPE_RV_KCTL(CARD, "Input Source", madi_input_source),
-//	HDSPE_RV_KCTL(CARD, "Speed Mode", speed_mode)
+	HDSPE_RW_BOOL_KCTL(CARD, "Autoselect Input", madi_autoinput),
+	HDSPE_RW_KCTL(CARD, "Preferred Input", madi_input_select),
+	HDSPE_RW_BOOL_KCTL(CARD, "Line Out", madi_LineOut),
+	HDSPE_RW_BOOL_KCTL(CARD, "Single Speed WordClk Out", madi_sswclk),
+	HDSPE_RW_BOOL_KCTL(CARD, "Clear TMS", madi_clr_tms),
 };
 
 static const struct snd_kcontrol_new snd_hdspe_controls_madiface[] = {
@@ -774,7 +742,7 @@ HDSPE_RO_ENUM_HDSPE_METHODS(running)
 HDSPE_RO_INT1_HDSPE_METHODS(capture_pid, 0, 0, 1)
 HDSPE_RO_INT1_HDSPE_METHODS(playback_pid, 0, 0, 1)
 
-HDSPE_RO_INT1_METHODS(buffer_size, 64, 4096, 1, hdspe_period_size)
+HDSPE_RO_INT1_METHODS(buffer_size, 32, 8192, 1, hdspe_period_size)
 
 static int hdspe_is_tco_present(struct hdspe* hdspe)
 {
@@ -849,9 +817,6 @@ int snd_hdspe_create_controls(struct snd_card *card,
 	/* Common controls: sample rate etc ... */
 	if (hdspe->io_type != HDSPE_MADIFACE) {
 		HDSPE_ADD_RV_CONTROL_ID(CARD, "Current AutoSync Reference", autosync_ref);
-#ifdef OLDSTUFF		
-		HDSPE_ADD_RV_CONTROL_ID(CARD, "External Frequency", external_freq);
-#endif /*OLDSTUFF*/		
 		err = hdspe_add_controls(hdspe,
 					 ARRAY_SIZE(snd_hdspe_controls_common),
 					 snd_hdspe_controls_common);
@@ -860,7 +825,7 @@ int snd_hdspe_create_controls(struct snd_card *card,
 	}
 
 	/* AutoSync status and frequency */
-	if (hdspe->io_type != HDSPE_MADI && hdspe->io_type != HDSPE_MADIFACE) {
+	if (hdspe->io_type != HDSPE_MADIFACE) {
 		HDSPE_ADD_RV_CONTROL_ID(CARD, "AutoSync Status",
 					autosync_status);
 		HDSPE_ADD_RV_CONTROL_ID(CARD, "AutoSync Frequency",
@@ -870,6 +835,9 @@ int snd_hdspe_create_controls(struct snd_card *card,
 	/* Card specific controls */
 	switch (hdspe->io_type) {
 	case HDSPE_MADI:
+		HDSPE_ADD_RV_CONTROL_ID(CARD, "External Frequency", external_freq);
+		HDSPE_ADD_RV_CONTROL_ID(CARD, "Current Input", madi_input_source);
+		HDSPE_ADD_RV_CONTROL_ID(CARD, "RX 64 Channels Mode", madi_rx_64ch);		
 		list = snd_hdspe_controls_madi;
 		limit = ARRAY_SIZE(snd_hdspe_controls_madi);
 		break;

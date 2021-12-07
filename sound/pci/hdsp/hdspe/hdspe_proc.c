@@ -187,6 +187,7 @@ void snd_hdspe_proc_init(struct hdspe *hdspe)
 	if (hdspe->tco)
 		snd_card_ro_proc_new(hdspe->card, "tco", hdspe,
 				     snd_hdspe_proc_read_tco);
+	snd_card_ro_proc_new(hdspe->card, "mixer", hdspe, hdspe_mixer_read_proc);
 
 #ifdef CONFIG_SND_DEBUG
 	/* debug file to read all hdspe registers */

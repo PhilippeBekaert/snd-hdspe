@@ -3,7 +3,7 @@
  * hdspe_madi.c
  * @brief RME HDSPe MADI driver methods.
  *
- * 20210728 - Philippe.Bekaert@uhasselt.be
+ * 20210728,1207 - Philippe.Bekaert@uhasselt.be
  *
  * Based on earlier work of the other MODULE_AUTHORS,
  * information kindly made available by RME (www.rme-audio.com),
@@ -84,9 +84,6 @@ static const char channel_map_unity_ss[HDSPE_MAX_CHANNELS] = {
 	56, 57, 58, 59, 60, 61, 62, 63
 };
 
-/* MIDI ports */
-
-
 #ifdef CONFIG_SND_DEBUG
 /* WR_CONTROL register bit names for MADI card */
 static const char* const madi_control_bitNames[32] = {
@@ -122,6 +119,42 @@ static const char* const madi_control_bitNames[32] = {
 	"?29",
 	"?30",
 	"freq3"
+};
+
+/* RD_STATUS2 register bit names for MADI */
+static const char* const madi_status2_bitNames[32] = {
+	"?00",
+	"?01",
+	"?02",
+	"wc_lock",	
+	"wc_sync",
+	"inp_freq0",
+	"inp_freq1",
+	"inp_freq2",
+	"SelSyncRef0",
+	"SelSyncRef1",
+	"SelSyncRef2",
+	"inp_freq3",	
+	"?12",
+	"?13",
+	"?14",
+	"?15",	
+	"?16",
+	"?17",
+	"?18",
+	"?19",	
+	"?20",
+	"?21",
+	"?22",
+	"?23",	
+	"?24",
+	"?25",
+	"?26",
+	"?27",	
+	"?28",
+	"?29",
+	"?30",
+	"?31"
 };
 #endif /*CONFIG_SND_DEBUG*/
 
@@ -190,14 +223,6 @@ static void hdspe_madi_read_status(struct hdspe* hdspe,
 	status->madi.rx_64ch = status0.rx_64ch;
 }
 
-#ifdef OLDSTUFF
-static bool hdspe_madi_has_status_changed(struct hdspe* hdspe)
-{
-	dev_dbg(hdspe->card->dev, "%s TODO\n", __func__);
-	return false;
-}
-#endif /*OLDSTUFF*/
-
 /* set 32-bit float sample format if val is true, s32le format if false */
 static void hdspe_madi_set_float_format(struct hdspe* hdspe, bool val)
 {
@@ -248,23 +273,7 @@ static enum hdspe_clock_source hdspe_madi_get_autosync_ref(struct hdspe* hdspe)
 	return madi_autosync_ref[hdspe_read_status2(hdspe).madi.sync_ref];
 }
 
-#ifdef OLDSTUFF
-static enum hdspe_sync_status hdspe_madi_get_sync_status(
-	struct hdspe* hdspe, enum hdspe_clock_source src)
-{
-	dev_warn(hdspe->card->dev, "%s TODO.\n", __func__);
-	return HDSPE_SYNC_STATUS_NOT_AVAILABLE;
-}
-
-static enum hdspe_freq hdspe_madi_get_freq(
-	struct hdspe* hdspe, enum hdspe_clock_source src)
-{
-	dev_warn(hdspe->card->dev, "hdspe_madi_get_freq todo");
-	return HDSPE_FREQ_NO_LOCK;	
-}
-#endif /*OLDSTUFF*/
-
-static enum hdspe_freq hdspe_madi_get_external_freq(struct hdspe* hdspe)
+enum hdspe_freq hdspe_madi_get_external_freq(struct hdspe* hdspe)
 {
 	struct hdspe_status2_reg_madi status2 = hdspe_read_status2(hdspe).madi;
 	enum hdspe_freq inp_freq = (status2.inp_freq3 << 3) |
@@ -274,13 +283,70 @@ static enum hdspe_freq hdspe_madi_get_external_freq(struct hdspe* hdspe)
 	return hdspe_speed_adapt(inp_freq, hdspe_speed_mode(hdspe));
 }
 
+static bool hdspe_madi_check_status_change(struct hdspe* hdspe,
+					   struct hdspe_status* o,
+					   struct hdspe_status* n)
+{
+	bool changed = false;
 
+	if (n->external_freq != o->external_freq && hdspe->cid.external_freq) {
+		dev_dbg(hdspe->card->dev, "external freq changed %d -> %d.\n",
+			o->external_freq, n->external_freq);		
+		HDSPE_CTL_NOTIFY(external_freq);
+		changed = true;
+	}
+
+	if (n->madi.input_source != o->madi.input_source) {
+		dev_dbg(hdspe->card->dev, "input source changed %d -> %d\n",
+			o->madi.input_source, n->madi.input_source);
+		HDSPE_CTL_NOTIFY(madi_input_source);
+		changed = true;
+	}
+
+	if (n->madi.rx_64ch != o->madi.rx_64ch) {
+		dev_dbg(hdspe->card->dev, "rx_64ch changed %d -> %d\n",
+			o->madi.rx_64ch, n->madi.rx_64ch);
+		HDSPE_CTL_NOTIFY(madi_rx_64ch);
+		changed = true;
+	}
+	
+	return changed;
+}
 
 static void hdspe_madi_proc_read(struct snd_info_entry *entry,
 				 struct snd_info_buffer *buffer)
 {
 	struct hdspe *hdspe = entry->private_data;
-	dev_warn(hdspe->card->dev, "%s TODO.\n", __func__);
+	struct hdspe_status s;
+
+	hdspe_proc_read_common(buffer, hdspe, &s);
+
+	snd_iprintf(buffer, "Preferred input\t\t: %d %s\n", s.madi.input_select,
+		    HDSPE_MADI_INPUT_NAME(s.madi.input_select));
+	snd_iprintf(buffer, "Auto input\t\t: %d %s\n", s.madi.auto_select,
+		    HDSPE_BOOL_NAME(s.madi.auto_select));
+	snd_iprintf(buffer, "Current input\t\t: %d %s\n", s.madi.input_source,
+		    HDSPE_MADI_INPUT_NAME(s.madi.input_source));
+	snd_iprintf(buffer, "Tx 64Ch\t\t\t: %d %s\n", s.madi.tx_64ch,
+		    HDSPE_BOOL_NAME(s.madi.tx_64ch));
+	snd_iprintf(buffer, "Rx 64Ch\t\t\t: %d %s\n", s.madi.rx_64ch,
+		    HDSPE_BOOL_NAME(s.madi.rx_64ch));
+	snd_iprintf(buffer, "S/Mux\t\t\t: %d %s\n", s.madi.smux,
+		    HDSPE_BOOL_NAME(s.madi.smux));
+
+	snd_iprintf(buffer, "\n");
+	IPRINTREG(buffer, "CONTROL", hdspe->reg.control.raw,
+		  madi_control_bitNames);
+	{
+		union hdspe_status2_reg status2 = hdspe_read_status2(hdspe);
+		u32 fbits = hdspe_read_fbits(hdspe);
+		IPRINTREG(buffer, "STATUS2", status2.raw,
+			  madi_status2_bitNames);
+		hdspe_iprint_fbits(buffer, "FBITS", fbits);
+	}
+
+	hdspe_proc_read_common2(buffer, hdspe, &s);	
+
 #ifdef OLDSTUFF
 	unsigned int status, status2;
 
@@ -427,19 +493,12 @@ static const struct hdspe_methods hdspe_madi_methods = {
 	.get_float_format = hdspe_madi_get_float_format,
 	.set_float_format = hdspe_madi_set_float_format,
 	.read_proc = hdspe_madi_proc_read,
-#ifdef OLDSTUFF
-	.get_freq = hdspe_madi_get_freq,
-	.get_external_freq = hdspe_madi_get_external_freq,
-#endif /*OLDSTUFF*/
 	.get_autosync_ref = hdspe_madi_get_autosync_ref,
 	.get_clock_mode = hdspe_madi_get_clock_mode,
 	.set_clock_mode = hdspe_madi_set_clock_mode,
 	.get_pref_sync_ref = hdspe_madi_get_preferred_sync_ref,
 	.set_pref_sync_ref = hdspe_madi_set_preferred_sync_ref,
-#ifdef OLDSTUFF
-	.get_sync_status = hdspe_madi_get_sync_status,
-	.has_status_changed = hdspe_madi_has_status_changed
-#endif /*OLDSTUFF*/
+	.check_status_change = hdspe_madi_check_status_change
 };
 
 static const struct hdspe_tables hdspe_madi_tables = {

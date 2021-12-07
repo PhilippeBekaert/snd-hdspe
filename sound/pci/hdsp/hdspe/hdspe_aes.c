@@ -232,14 +232,6 @@ static void hdspe_aes_read_status(struct hdspe* hdspe,
 	status->aes.aes_mode = status2.aes_mode;
 }
 
-#ifdef OLDSTUFF
-static bool hdspe_aes_has_status_changed(struct hdspe* hdspe)
-{
-	dev_dbg(hdspe->card->dev, "%s TODO\n", __func__);
-	return false;
-}
-#endif /*OLDSTUFF*/
-
 static void hdspe_aes_set_float_format(struct hdspe* hdspe, bool val)
 {
 	hdspe->reg.control.aes.FloatFmt = val;
@@ -289,29 +281,6 @@ static enum hdspe_clock_source hdspe_aes_get_autosync_ref(struct hdspe* hdspe)
 {
 	return aes_autosync_ref[hdspe_read_status0(hdspe).aes.sync_ref];
 }
-
-#ifdef OLDSTUFF
-static enum hdspe_sync_status hdspe_aes_get_sync_status(
-	struct hdspe* hdspe, enum hdspe_clock_source src)
-{
-	dev_warn(hdspe->card->dev, "%s TODO.\n", __func__);
-	return HDSPE_SYNC_STATUS_NOT_AVAILABLE;
-}
-
-static enum hdspe_freq hdspe_aes_get_freq(
-	struct hdspe* hdspe, enum hdspe_clock_source src)
-{
-	dev_warn(hdspe->card->dev, "%s TODO.\n", __func__);  
-	return HDSPE_FREQ_NO_LOCK;
-}
-
-static enum hdspe_freq hdspe_aes_get_external_freq(struct hdspe* hdspe)
-{
-	enum hdspe_clock_source src = hdspe_aes_get_autosync_ref(hdspe);
-	return hdspe_speed_adapt(hdspe_aes_get_freq(hdspe, src),
-				 hdspe_speed_mode(hdspe));
-}
-#endif /*OLDSTUFF*/
 
 static void hdspe_aes_proc_read(struct snd_info_entry * entry,
 				struct snd_info_buffer *buffer)

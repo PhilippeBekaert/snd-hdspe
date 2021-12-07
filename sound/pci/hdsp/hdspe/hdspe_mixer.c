@@ -3,7 +3,7 @@
  * hdspe-mixer.c
  * @brief RME HDSPe hardware mixer status and control interface.
  *
- * 20210728 - Philippe.Bekaert@uhasselt.be
+ * 20210728,1206,07 - Philippe.Bekaert@uhasselt.be
  *
  * Based on earlier work of the other MODULE_AUTHORS,
  * information kindly made available by RME (www.rme-audio.com),
@@ -62,6 +62,86 @@ static int hdspe_write_pb_gain(struct hdspe *hdspe, unsigned int chan,
 		    ((64 + pb + 128 * chan) * sizeof(u32)),
 		    (hdspe->mixer->ch[chan].pb[pb] = data & 0xFFFF));
 	return 0;
+}
+
+void hdspe_mixer_read_proc(struct snd_info_entry *entry,
+			       struct snd_info_buffer *buffer)
+{
+	struct hdspe *hdspe = entry->private_data;
+	int i, j;
+
+	snd_iprintf(buffer, "Capture Volume:\n");
+	snd_iprintf(buffer, "    ");
+	for (j = 0; j < HDSPE_MIXER_CHANNELS; j++)
+		snd_iprintf(buffer, "   %02u ", j);
+	snd_iprintf(buffer, "\n");
+	
+	for (i = 0; i < HDSPE_MIXER_CHANNELS; i++) {
+		snd_iprintf(buffer, "%02d: ", i);
+		for (j = 0; j < HDSPE_MIXER_CHANNELS; j++)
+			snd_iprintf(buffer, "%5u ",
+				   hdspe_read_in_gain(hdspe, i, j));
+		snd_iprintf(buffer, "\n");		
+	}
+
+	snd_iprintf(buffer, "\nPlayback Volume:\n");
+	snd_iprintf(buffer, "    ");
+	for (j = 0; j < HDSPE_MIXER_CHANNELS; j++)
+		snd_iprintf(buffer, "   %02u ", j);
+	snd_iprintf(buffer, "\n");
+	
+	for (i = 0; i < HDSPE_MIXER_CHANNELS; i++) {
+		snd_iprintf(buffer, "%02d: ", i);
+		for (j = 0; j < HDSPE_MIXER_CHANNELS; j++)
+			snd_iprintf(buffer, "%5u ",
+				   hdspe_read_pb_gain(hdspe, i, j));
+		snd_iprintf(buffer, "\n");		
+	}
+}
+
+void hdspe_mixer_update_channel_map(struct hdspe* hdspe)
+{
+	int i, j;
+	bool used[HDSPE_MAX_CHANNELS];
+
+	dev_dbg(hdspe->card->dev, "%s:\n", __func__);
+	
+	/* mute all unused playback channels */
+	for (i = 0; i < HDSPE_MIXER_CHANNELS; i ++) {
+		used[i] = false;
+	}
+	for (i = 0; i < HDSPE_MIXER_CHANNELS; i ++) {
+		int c = hdspe->channel_map_out[i];
+		used[c] = true;
+	}
+	for (i = 0; i < HDSPE_MIXER_CHANNELS; i ++) {
+		if (!used[i]) {
+			for (j = 0; j < HDSPE_MIXER_CHANNELS; j ++) {
+				hdspe_write_in_gain(hdspe, i, j, 0);
+				hdspe_write_pb_gain(hdspe, i, j, 0);
+			}
+		} else {
+#ifdef DAW_MODE
+			hdspe_write_pb_gain(hdspe, i, i, HDSPE_UNITY_GAIN);
+#endif /*DAW_MODE*/
+		}
+	}
+	
+	/* mute all unused capture channels */
+	for (i = 0; i < HDSPE_MIXER_CHANNELS; i ++) {
+		used[i] = false;
+	}
+	for (i = 0; i < HDSPE_MIXER_CHANNELS; i ++) {
+		int c = hdspe->channel_map_in[i];
+		used[c] = true;
+	}
+	for (i = 0; i < HDSPE_MIXER_CHANNELS; i ++) {	
+		if (!used[i]) {
+			for (j = 0; j < HDSPE_MIXER_CHANNELS; j ++) {
+				hdspe_write_in_gain(hdspe, j, i, 0);
+			}
+		}
+	}
 }
 
 static void hdspe_clear_mixer(struct hdspe * hdspe, u16 sgain)
@@ -267,7 +347,7 @@ static int hdspe_update_simple_mixer_controls(struct hdspe * hdspe)
 	dev_dbg(hdspe->card->dev, "Update mixer controls...\n");
 	// TODO: what about quad speed nr of channels??
 	for (i = hdspe->t.ds_out_channels; i < hdspe->t.ss_out_channels; ++i) {
-	  if (hdspe_speed_mode(hdspe) > HDSPE_SPEED_SINGLE) {
+		if (hdspe_speed_mode(hdspe) > HDSPE_SPEED_SINGLE) {
 			hdspe->playback_mixer_ctls[i]->vd[0].access =
 				SNDRV_CTL_ELEM_ACCESS_INACTIVE |
 				SNDRV_CTL_ELEM_ACCESS_READ |
@@ -338,6 +418,7 @@ int hdspe_init_mixer(struct hdspe* hdspe)
 		return -ENOMEM;
 	
 	hdspe_clear_mixer(hdspe, 0 * HDSPE_UNITY_GAIN);
+	
 	return 0;
 }
 

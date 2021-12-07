@@ -107,7 +107,7 @@ u32 hdspe_period_size(struct hdspe *hdspe)
 	if ((7 == n) && hdspe_is_raydat_or_aio(hdspe))
 		n = -1;
 
-	return 1 << (n + 6);
+	return 1 << (n + 6);    /* 64 << n */
 }
 
 /* Sets hdspe->period_size and hdspe->hw_buffer_size according to the
@@ -116,7 +116,7 @@ static void hdspe_set_period_size(struct hdspe* hdspe)
 {
 	hdspe->period_size = hdspe_period_size(hdspe);
 	hdspe->hw_buffer_size = hdspe_is_raydat_or_aio(hdspe) ? ((1<<16)/4)
-	  : 2 * hdspe->period_size;  
+		  : 2 * hdspe->period_size;
 }
 
 static int hdspe_set_interrupt_interval(struct hdspe *hdspe, unsigned int frames)
@@ -174,28 +174,36 @@ snd_pcm_uframes_t hdspe_hw_pointer(struct hdspe *hdspe)
  * interrupt handling, as long as the hardware pointer did not wrap more 
  * than once since the previous invocation. The hardware pointer wraps every 
  * 16K frames on a RayDAT/AIO/AIO Pro, so about 3 times a second at 48 KHz 
- * sampling rate. On a AES or MADI, the hardware buffer is only 2 period
- * sizes. */
+ * sampling rate. */
 void hdspe_update_frame_count(struct hdspe* hdspe)
 {
 	u32 hw_pointer;
 
-	hw_pointer = hdspe_hw_pointer(hdspe);
+//	hw_pointer = hdspe_hw_pointer(hdspe);
+	hw_pointer = le16_to_cpu(hdspe->reg.status0.common.BUF_PTR) << 4;
 	if (hw_pointer < hdspe->last_hw_pointer)
 		hdspe->hw_pointer_wrap_count ++;
 	hdspe->last_hw_pointer = hw_pointer;
 
 	hdspe->frame_count =
-		(u64)hdspe->hw_pointer_wrap_count * hdspe->hw_buffer_size
+		(u64)hdspe->hw_pointer_wrap_count * ((1<<16)/4) // hdspe->hw_buffer_size
 		+ (hw_pointer & ~(hdspe->period_size - 1));
-	
+
 #ifdef DEBUG_FRAME_COUNT
 	{
 		static u64 last_frame_count =0;
-		dev_dbg(hdspe->card->dev, "%s: hw_pointer=%u, frame_count=%llu, delta=%llu\n",
-			__func__, hw_pointer, hdspe->frame_count,
+		static u64 last_hw_pointer =0;
+		hw_pointer = hdspe_hw_pointer(hdspe);
+		dev_dbg(hdspe->card->dev, "%s: hw_pointer=%u (delta %llu), frame_count=%llu (delta=%llu)\n",
+			__func__,
+			hw_pointer,
+			hw_pointer > last_hw_pointer
+			? hw_pointer - last_hw_pointer
+			: (hw_pointer + hdspe->hw_buffer_size) - last_hw_pointer,
+			hdspe->frame_count,
 			hdspe->frame_count - last_frame_count);
 		last_frame_count = hdspe->frame_count;
+		last_hw_pointer = hw_pointer;
 	}
 #endif /*DEBUG_FRAME_COUNT*/
 }
