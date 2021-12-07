@@ -116,7 +116,7 @@ assists module signing for secure boot.
 
 **Status**
 
-At this time (November, 25 2021), the driver is work in progress.
+At this time (November, 29 2021), the driver is work in progress.
 - AES, AIO, AIO Pro, RayDAT and TCO control and PCM capture and playback, and MIDI
 support is ready for beta testing.
 - MADI card support to be done..
