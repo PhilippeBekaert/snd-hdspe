@@ -116,10 +116,9 @@ assists module signing for secure boot.
 
 **Status**
 
-At this time (November, 29 2021), the driver is work in progress.
-- AES, AIO, AIO Pro, RayDAT and TCO control and PCM capture and playback, and MIDI
+At this time (December, 7 2021), the driver is still work in progress.
+- AES, AIO, AIO Pro, MADI, RayDAT and TCO control and PCM capture and playback, and MIDI
 support is ready for beta testing.
-- MADI card support to be done..
 - It is developed on ubuntu studio 20.04 and has only been tested on that distribution so far.
 - Other TODOs: mixer interface, ...
 
@@ -144,4 +143,4 @@ See [LICENSE](https://github.com/PhilippeBekaert/snd-hdspe/blob/main/LICENSE).
 
 **Author**
 
-[Philippe Bekaert](mailto:linux@panokkel.be), November 2021.
+[Philippe Bekaert](mailto:linux@panokkel.be), December 2021.
