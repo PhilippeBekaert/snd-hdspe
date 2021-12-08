@@ -187,10 +187,10 @@ AES controls:
 | :- | :- | :- | :- | :- |
 | CARD | Double Speed Mode | RW | Enum | Double speed mode: Single Wire or Double Wire |
 | CARD | Quad Speed Mode | RW | Enum | Quad speed mode: Single Wire, Double Wire or Quad Wire | 
-| CARD | Professional | RW | Bool | | 
-| CARD | Emphasis | RW | Bool | | 
-| CARD | Non Audio | RW | Bool | (dolby), AC3 |
-| CARD | Line Out | RW | Bool | |
+| CARD | Professional | RW | Bool | If true, output professional mode AES (5V, professional mode status bits). If false, outputs 2V and consumer status bits, compatible with S/PDIF HiFi equipment e.g. | 
+| CARD | Emphasis | RW | Bool | Enable high frequency emphasis status bit in output. | 
+| CARD | Non Audio | RW | Bool | Enable non-audio (dolby/AC3) status bits in output. |
+| CARD | Line Out | RW | Bool | On by default. Disable for AC3 output. |
 | CARD | Single Speed WordClk Out | RW | Bool | Output single-speed word clock signal, also when running in double or quad speed mode | 
 | CARD | Clear TMS | RW | Bool | Clear track-marker and status bits from AES and ADAT audio samples. If not set, these bits are available as the least significant bits of PCM data. | 
 
