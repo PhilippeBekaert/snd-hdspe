@@ -140,7 +140,11 @@ void hdspe_mixer_update_channel_map(struct hdspe* hdspe)
 			for (j = 0; j < HDSPE_MIXER_CHANNELS; j ++) {
 				hdspe_write_in_gain(hdspe, j, i, 0);
 			}
-		}
+		} else {
+#ifdef PASSTHROUGH_MODE
+			hdspe_write_in_gain(hdspe, i, i, HDSPE_UNITY_GAIN);
+#endif /*PASSTHROUGH_MODE*/
+		}		
 	}
 }
 

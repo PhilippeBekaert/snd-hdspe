@@ -107,7 +107,7 @@ u32 hdspe_period_size(struct hdspe *hdspe)
 	if ((7 == n) && hdspe_is_raydat_or_aio(hdspe))
 		n = -1;
 
-	return 1 << (n + 6);    /* 64 << n */
+	return 64 << n; // 1 << (n + 6);
 }
 
 /* Sets hdspe->period_size and hdspe->hw_buffer_size according to the
@@ -163,7 +163,7 @@ static int hdspe_set_interrupt_interval(struct hdspe *hdspe, unsigned int frames
 snd_pcm_uframes_t hdspe_hw_pointer(struct hdspe *hdspe)
 {
 	/* (BUF_PTR << 6) bytes / 4 bytes per sample */
-	return (le16_to_cpu(hdspe->reg.status0.common.BUF_PTR) << 4)
+	return ((le16_to_cpu(hdspe->reg.status0.common.BUF_PTR)) << 4)
 		& (hdspe->hw_buffer_size - 1);
 }
 

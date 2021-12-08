@@ -3,16 +3,19 @@
  * @file hdspe_core.h
  * @brief RME HDSPe driver internal header.
  *
- * 20210728 - Philippe.Bekaert@uhasselt.be
+ * 20210728 ... 1207 - Philippe.Bekaert@uhasselt.be
  *
  * Based on earlier work of the other MODULE_AUTHORs,
  * information kindly made available by RME (www.rme-audio.com),
  * and hardware kindly made available by Amptec Belgium (www.amptec.be).
  */
 
-/* TODO: remove in production version */
+/* TODO: undefine in production version */
 #define DEBUG
 #define CONFIG_SND_DEBUG
+//#define TIME_INTERRUPT_INTERVAL
+#define DAW_MODE
+//#define PASSTHROUGH_MODE
 
 #ifndef __SOUND_HDSPE_CORE_H
 #define __SOUND_HDSPE_CORE_H
@@ -204,7 +207,7 @@ struct hdspe_control_reg_common { __le32
 	IEN0    : 1,   // MIDI 0 interrupt enable
 	IEN1    : 1,   // MIDI 1 interrupt enable
 
-	LineOut : 1,   // Analog Out on channel 63/64 on=1, mute=0 
+	LineOut : 1,   // Enable/disable analog output
 	_25     : 1,
 	_26     : 1,
 	_27     : 1,
@@ -831,6 +834,9 @@ struct hdspe_methods {
 	void (*set_clock_mode)(struct hdspe*, enum hdspe_clock_mode);
 	enum hdspe_clock_source (*get_pref_sync_ref)(struct hdspe*);
 	void (*set_pref_sync_ref)(struct hdspe*, enum hdspe_clock_source);
+	bool (*check_status_change)(struct hdspe*,
+				    struct hdspe_status* old_status,
+				    struct hdspe_status* new_status);
 };
 
 /**
@@ -865,11 +871,6 @@ struct hdspe_tables {
 	unsigned char qs_out_channels;
 
 	const char * const *clock_source_names;
-
-	/* For status change detection */
-	__le32 status1, status1_mask;
-	__le32 status2, status2_mask;
-	u32 fbits;
 };
 
 /* status element ids for status change notification */
@@ -884,12 +885,14 @@ struct hdspe_ctl_ids {
 	struct snd_ctl_elem_id* raw_sample_rate;
 	struct snd_ctl_elem_id* dds;
 	struct snd_ctl_elem_id* autosync_ref;
-#ifdef OLDSTUFF  
-	struct snd_ctl_elem_id* external_freq;
-#endif /*OLDSTUFF*/
 	struct snd_ctl_elem_id* autosync_status;
 	struct snd_ctl_elem_id* autosync_freq;
 
+	/* MADI */
+	struct snd_ctl_elem_id* external_freq;
+	struct snd_ctl_elem_id* madi_input_source;
+	struct snd_ctl_elem_id* madi_rx_64ch;
+	
 	/* TCO */
 	struct snd_ctl_elem_id* ltc_in;
 	struct snd_ctl_elem_id* ltc_valid;
@@ -988,7 +991,6 @@ struct hdspe {
 
         spinlock_t lock;
 	int irq_count;		     /* for debug */
-/* #define TIME_INTERRUPT_INTERVAL */
 #ifdef TIME_INTERRUPT_INTERVAL
 	u64 last_interrupt_time;
 #endif /*TIME_INTERRUPT_INTERVAL*/
@@ -1116,7 +1118,8 @@ extern int snd_hdspe_create_pcm(struct snd_card *card,
 /* Current period size in samples. */
 extern u32 hdspe_period_size(struct hdspe *hdspe);
 
-/* Get current hardware frame counter. Wraps every 16K frames. */
+/* Get current hardware frame counter. Wraps every 16K frames or sooner
+ * for MADI and AES cards. */
 extern snd_pcm_uframes_t hdspe_hw_pointer(struct hdspe *hdspe);
 
 /* Called right from the interrupt handler in order to update 
@@ -1138,10 +1141,6 @@ extern void hdspe_terminate_midi(struct hdspe* hdspe);
 
 extern int snd_hdspe_create_midi(struct snd_card *card,
 				 struct hdspe *hdspe, int id);
-
-#ifdef OLDSTUFF
-extern void snd_hdspe_flush_midi_input(struct hdspe *hdspe, int id);
-#endif /*OLDSTUFF*/
 
 extern void hdspe_midi_work(struct work_struct *work);
 
@@ -1225,6 +1224,11 @@ extern int hdspe_create_mixer_controls(struct hdspe* hdspe);
 #ifdef OLDSTUFF
 extern int hdspe_update_simple_mixer_controls(struct hdspe * hdspe);
 #endif /*OLDSTUFF*/
+
+extern void hdspe_mixer_read_proc(struct snd_info_entry *entry,
+				  struct snd_info_buffer *buffer);
+
+extern void hdspe_mixer_update_channel_map(struct hdspe* hdspe);
 
 /**
  * hdspe_tco.c
@@ -1369,6 +1373,8 @@ void hdspe_set_sync_source(struct hdspe_status* status,
 extern int hdspe_init_madi(struct hdspe* hdspe);
 
 extern void hdspe_terminate_madi(struct hdspe* hdspe);
+
+extern enum hdspe_freq hdspe_madi_get_external_freq(struct hdspe* hdspe);
 
 /**
  * hdspe_aes.c

@@ -27,7 +27,7 @@
  *      Modified 2019-05-23 fix AIO single speed ADAT capture and playback
  *      by Philippe.Bekaert@uhasselt.be
  *
- *      Modified 2021-07 ... 2021-11 AIO Pro support, fixes, register 
+ *      Modified 2021-07 ... 2021-12 AIO Pro support, fixes, register 
  *      documentation, clean up, refactoring, updated user space API,
  *      renamed hdspe, updated control elements, TCO LTC output, double/quad
  *      speed AIO / AIO Pro fixes, ...
@@ -114,11 +114,11 @@ static irqreturn_t snd_hdspe_interrupt(int irq, void *dev_id)
 
 #ifdef TIME_INTERRUPT_INTERVAL
 	u64 now = ktime_get_raw_fast_ns();
-	dev_dbg(hdspe->card->dev, "snd_hdspe_interrupt %llu LAT=%d, BUF_PTR=%u, BUF_ID=%u %s%s%s%s%s\n",
-		now - hdspe->last_interrupt_time,
+	dev_dbg(hdspe->card->dev, "snd_hdspe_interrupt %llu us LAT=%d BUF_ID=%u BUF_PTR=%05u %s%s%s%s%s\n",
+		(now - hdspe->last_interrupt_time) / 1000,
 		hdspe->reg.control.common.LAT,
-		le16_to_cpu(hdspe->reg.status0.common.BUF_PTR)<<6,
 		hdspe->reg.status0.common.BUF_ID,
+		le16_to_cpu(hdspe->reg.status0.common.BUF_PTR)<<6,
 		audio ? "AUDIO " : "",
 		hdspe->midiPorts>0 && (hdspe->reg.status0.raw & hdspe->midi[0].irq) ? "MIDI1 " : "",
 		hdspe->midiPorts>1 && (hdspe->reg.status0.raw & hdspe->midi[1].irq) ? "MIDI2 " : "",
@@ -131,15 +131,15 @@ static irqreturn_t snd_hdspe_interrupt(int irq, void *dev_id)
 	if (!audio && !midi)
 		return IRQ_NONE;
 
-	hdspe_write(hdspe, HDSPE_interruptConfirmation, 0);
-	hdspe->irq_count++;
-
 	if (audio) {
-		hdspe_update_frame_count(hdspe);
+		hdspe_write(hdspe, HDSPE_interruptConfirmation, 0);
+		hdspe->irq_count++;
 		
+		hdspe_update_frame_count(hdspe);
+
 		if (hdspe->tco) {
-			/* LTC In update must happen before client
-			 * apps are notified of a new period */
+			/* LTC In update must happen before user
+			 * space is notified of a new period */
 			hdspe_tco_period_elapsed(hdspe);
 		}
 
