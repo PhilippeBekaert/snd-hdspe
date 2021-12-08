@@ -579,7 +579,7 @@ int hdspe_init_aes(struct hdspe* hdspe)
 
 	hdspe->m = hdspe_aes_methods;
 
-	hdspe->card_name = "RME AES";
+	hdspe->card_name = "RME AES32";
 	hdspe_init_midi(hdspe, 2 + (hdspe->tco ? 1 : 0), hdspe_aes_midi_ports);
 
 	hdspe->t = hdspe_aes_tables;

@@ -3,7 +3,7 @@
  * hdspe_pcm.c
  * @brief RME HDSPe PCM interface.
  *
- * 20210728 - Philippe.Bekaert@uhasselt.be
+ * 20210728 ... 1208 - Philippe.Bekaert@uhasselt.be
  *
  * Refactored work of the other MODULE_AUTHORs.
  */
@@ -173,20 +173,18 @@ snd_pcm_uframes_t hdspe_hw_pointer(struct hdspe *hdspe)
  * determine the frame counter even in the presence of xruns or late
  * interrupt handling, as long as the hardware pointer did not wrap more 
  * than once since the previous invocation. The hardware pointer wraps every 
- * 16K frames on a RayDAT/AIO/AIO Pro, so about 3 times a second at 48 KHz 
- * sampling rate. */
+ * 16K frames, so about 3 times a second at 48 KHz sampling rate. */
 void hdspe_update_frame_count(struct hdspe* hdspe)
 {
 	u32 hw_pointer;
 
-//	hw_pointer = hdspe_hw_pointer(hdspe);
 	hw_pointer = le16_to_cpu(hdspe->reg.status0.common.BUF_PTR) << 4;
 	if (hw_pointer < hdspe->last_hw_pointer)
 		hdspe->hw_pointer_wrap_count ++;
 	hdspe->last_hw_pointer = hw_pointer;
 
 	hdspe->frame_count =
-		(u64)hdspe->hw_pointer_wrap_count * ((1<<16)/4) // hdspe->hw_buffer_size
+		(u64)hdspe->hw_pointer_wrap_count * ((1<<16)/4)
 		+ (hw_pointer & ~(hdspe->period_size - 1));
 
 #ifdef DEBUG_FRAME_COUNT
