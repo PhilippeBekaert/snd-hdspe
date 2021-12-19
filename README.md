@@ -130,7 +130,7 @@ are relying on the control interface or features as they are now.
 **Acknowledgements**
 
 - This work builds on previous work by the hdspm linux kernel driver authors over the last nearly 20 years:
-Winfried Ritsch, Paul Davis, Marcus Andersson, Thomas Charbonnel, Remy Bruno, Florian Faber and Andrian Knoth.
+Winfried Ritsch, Paul Davis, Marcus Andersson, Thomas Charbonnel, Remy Bruno, Florian Faber and Adrian Knoth.
 (Blame [the author](mailto:linux@panokkel.be) for bugs in the new driver.)
 - Thanks to [RME](http://www.rme-audio.com) for providing the necessary information and code for writing this driver.
 - Thanks to [Amptec Belgium](http://www.amptec.be) for hardware support.
