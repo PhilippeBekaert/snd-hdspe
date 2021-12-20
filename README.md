@@ -113,11 +113,11 @@ assists module signing for secure boot.
 
 **Status**
 
-At this time (December, 8 2021), the driver is still work in progress.
+At this time (December, 20 2021), the driver is still work in progress.
 - AES, AIO, AIO Pro, MADI, RayDAT and TCO control and PCM capture and playback, and MIDI
 support is ready for beta testing.
 - It is developed on ubuntu studio 20.04 and has only been tested on that distribution so far.
-- Other TODOs: mixer interface, ...
+- Other TODOs: mixer interface, loopback, power suspend and resume, ...
 
 As the code is still work in progress, the control interface may change at
 any time and features may be added or updated. Inform the author if you
