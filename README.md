@@ -41,8 +41,7 @@ This builds the snd-hdspe.ko kernel driver in the sound/pci/hdsp/hdspe subdirect
 
 or
 
-      sudo -s
-      make insert
+      sudo make insert
 
 You need to stop all (audio) applications using the snd-hdspm driver before, in particular PulseAudio and the jack audio server.
 
@@ -58,8 +57,7 @@ testing it once.
 
 or
 
-      sudo -s
-      make enable-debug-log
+      sudo make enable-debug-log
     
 - Removing the snd-hdspe.ko driver and re-installing the default snd-hdspm driver:
 
@@ -69,8 +67,7 @@ or
 
 or
 
-      sude -s
-      make remove
+      sude make remove
 
 - Viewing ALSA controls:
 
