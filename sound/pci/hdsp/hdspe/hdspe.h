@@ -501,7 +501,7 @@ enum hdspe_video_fps {   /* TCO firmware version 11 and above */
 	 i == HDSPE_VIDEO_FPS_29_97       ? "29.97" :	\
 	 i == HDSPE_VIDEO_FPS_30          ? "30" :	\
 	 i == HDSPE_VIDEO_FPS_47_95       ? "47.95" :	\
-	 i == HDSPE_VIDEO_FPS_48          ? "28" :	\
+	 i == HDSPE_VIDEO_FPS_48          ? "48" :	\
 	 i == HDSPE_VIDEO_FPS_50          ? "50" :	\
 	 i == HDSPE_VIDEO_FPS_59_94       ? "59.94" :	\
 	 i == HDSPE_VIDEO_FPS_60          ? "60" :	\
