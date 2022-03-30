@@ -3,7 +3,7 @@
  * hdspe-control.c
  * @brief RME HDSPe sound card driver status and control interface.
  *
- * 20210727,28,29,30,0908,09,10 - Philippe.Bekaert@uhasselt.be
+ * 20210727,28,29,30,0908,09,10,20220330 - Philippe.Bekaert@uhasselt.be
  *
  * Based on earlier work of the other MODULE_AUTHORS,
  * information kindly made available by RME (www.rme-audio.com),
@@ -195,17 +195,20 @@ void hdspe_status_work(struct work_struct *work)
 
 	if (hdspe->last_status_change_jiffies == 0)
 		hdspe->last_status_change_jiffies = jiffies;
-	
-	if (changed || jiffies > hdspe->last_status_change_jiffies + 2*HZ) {
-		if (jiffies > hdspe->last_status_change_jiffies + 2*HZ)
-			dev_dbg(hdspe->card->dev,
-				"%s: polling timeout expired.\n", __func__);
+
+	if (changed) {
+		hdspe->last_status_change_jiffies = 0;
+		hdspe->status_polling = 0; /* disable - user must re-enable */
+		HDSPE_CTL_NOTIFY(status_polling);
+	} else if (jiffies > hdspe->last_status_change_jiffies + 2*HZ) {
+		dev_dbg(hdspe->card->dev,
+			"%s: polling timeout expired: jiffies=%lu, last_status_change_jiffied=%lu, delta=%ld, 2*HZ=%d.\n", __func__,
+			jiffies, hdspe->last_status_change_jiffies,
+			jiffies - hdspe->last_status_change_jiffies, 2*HZ);
+		hdspe->last_status_change_jiffies = 0;
 		hdspe->status_polling = 0; /* disable - user must re-enable */
 		HDSPE_CTL_NOTIFY(status_polling);
 	}
-
-	if (changed)
-		hdspe->last_status_change_jiffies = jiffies;
 }
 
 
@@ -809,7 +812,7 @@ int snd_hdspe_create_controls(struct snd_card *card,
 	HDSPE_ADD_RV_CONTROL_ID(CARD, "Running", running);
 	HDSPE_ADD_RV_CONTROL_ID(CARD, "Buffer Size", buffer_size);
 
-	HDSPE_ADD_RW_CONTROL_ID(CARD, "Status Polling", status_polling);
+	HDSPE_ADD_RWV_CONTROL_ID(CARD, "Status Polling", status_polling);
 	HDSPE_ADD_RV_CONTROL_ID(HWDEP, "Raw Sample Rate", raw_sample_rate);
 	HDSPE_ADD_RW_CONTROL_ID(HWDEP, "DDS", dds);
 	HDSPE_ADD_RW_CONTROL_ID(CARD, "Internal Frequency", internal_freq);

@@ -81,6 +81,7 @@ TCO controls
 
 | Interface | Name | Access | Value Type | Description |
 | :- | :- | :- | :- | :- |
+| CARD | TCO Firmware | RO | Int | TCO module firmware version |
 | CARD | LTC In | RV | Int64 | Incoming LTC code - see below **LTC control** | 
 | CARD | LTC In Drop Frame | RV | Bool | Whether incoming LTC is drop frame format or not | 
 | CARD | LTC In Frame Rate | RV | Enum | Incoming **LTC frame rate**: 24, 25 or 30 fps | 
@@ -94,11 +95,13 @@ TCO controls
 | CARD | TCO Lock | RV | Bool | Whether or not the TCO is locked to LTC, Video or Word Clock | 
 | CARD | TCO Pull | RW | Enum | Pull Up / Pull Down factor |
 | CARD | TCO Sync Source | RW | Enum | TCO preferred synchronisation source: LTC, Video or Word Clock | 
-| CARD | TCO Video Format | RV | Enum | Video format reference signal detected: PAL or NTSC blackburst | 
+| CARD | TCO Video Format | RV | Enum | Video format reference signal detected: PAL or NTSC blackburst |
+| CARD | TCO Video Frame Rate | RV | Enum | Video frame rate detected (meaningful only if TCO firmware >= 11) |
 | CARD | TCO WordClk Conversion | RW | Enum | Word clock rate conversion 1:1, 44.1 -> 48 KHz, 48 -> 44.1 KHz | 
 | CARD | TCO WordClk Term | RW | Bool | Whether or not to 75 Ohm terminate the word clock/video input BNC | 
 | CARD | TCO WordClk Valid | RV | Bool | Whether or not a valid word clock signal is detected | 
-| CARD | TCO WordClk Speed | RV | Enum | Detected input word clock speed | 
+| CARD | TCO WordClk Speed | RV | Enum | Detected input word clock speed |
+| CARD | TCO WorldClk Out Speed | RW | Enum | Output word clock speed |
 
 **LTC Control**
 

@@ -3,7 +3,19 @@
  * @file hdspe.h
  * @brief RME HDSPe driver user space API.
  *
+ * Note: The definitions and structs defined in this header file are used
+ * within the driver as well as in IOCTLs. As they are used within the
+ * driver, they are up to date. However, the IOCTLs should be considered
+ * obsolete: the same information on the driver can be obtained via
+ * standard ALSA control mechanisms, except for the mixer and level
+ * meters at this time. To my knowledge (PhB), the only (public) application
+ * still using the IOCTL interface is hdspmixer. hdspeconf is fully based on
+ * the ALSA control mechanism. Do not use the IOCTLs for new development -
+ * inform Philippe.Bekaert@uhasselt.be in case you wouldn't be able to do 
+ * without.
+ *
  * 20210728 ... 0813 - Philippe.Bekaert@uhasselt.be
+ * 20220329,30 - PhB : API version 3 (TCO related additions)
  *
  * Based on earlier work by Winfried Ritsch (IEM, 2003) and
  * Thomas Charbonnel (thomas@undata.org),
@@ -21,7 +33,7 @@
  * Structs returned by the HDSPe driver ioctls contain the API version with which the
  * kernel driver has been compiled. API users should check that version against
  * HDSPE_VERSION and take appropriate action in case versions differ. */
-#define HDSPE_VERSION            2
+#define HDSPE_VERSION            3
 
 /* Maximum hardware input, software playback and hardware output
  * channels is 64 even on 56Mode you have 64playbacks to matrix. */
@@ -460,9 +472,39 @@ enum hdspe_video_format {
 };
 
 #define HDSPE_VIDEO_FORMAT_NAME(i)				\
-	(i == HDSPE_VIDEO_FORMAT_NO_VIDEO    ? "No Video" :	\
+	(i == HDSPE_VIDEO_FORMAT_NO_VIDEO    ? "" :	        \
 	 i == HDSPE_VIDEO_FORMAT_NTSC        ? "NTSC" :		\
 	 i == HDSPE_VIDEO_FORMAT_PAL         ? "PAL" :		\
+	 "???")
+
+enum hdspe_video_fps {   /* TCO firmware version 11 and above */
+        HDSPE_VIDEO_FPS_NO_VIDEO =0,
+	HDSPE_VIDEO_FPS_23_98    =1,
+	HDSPE_VIDEO_FPS_24       =2,
+	HDSPE_VIDEO_FPS_25       =3,
+	HDSPE_VIDEO_FPS_29_97    =4,
+	HDSPE_VIDEO_FPS_30       =5,	
+	HDSPE_VIDEO_FPS_47_95    =6,
+	HDSPE_VIDEO_FPS_48       =7,
+	HDSPE_VIDEO_FPS_50       =8,
+	HDSPE_VIDEO_FPS_59_94    =9,
+	HDSPE_VIDEO_FPS_60       =10,
+	HDSPE_VIDEO_FPS_COUNT    =11,
+	HDSPE_VIDEO_FOS_FORCE_32BIT = 0xffffffff
+};
+
+#define HDSPE_VIDEO_FPS_NAME(i)				\
+	(i == HDSPE_VIDEO_FPS_NO_VIDEO    ? "" :	\
+	 i == HDSPE_VIDEO_FPS_23_98       ? "23.98" :	\
+	 i == HDSPE_VIDEO_FPS_24          ? "24" :	\
+	 i == HDSPE_VIDEO_FPS_25          ? "25" :	\
+	 i == HDSPE_VIDEO_FPS_29_97       ? "29.97" :	\
+	 i == HDSPE_VIDEO_FPS_30          ? "30" :	\
+	 i == HDSPE_VIDEO_FPS_47_95       ? "47.95" :	\
+	 i == HDSPE_VIDEO_FPS_48          ? "28" :	\
+	 i == HDSPE_VIDEO_FPS_50          ? "50" :	\
+	 i == HDSPE_VIDEO_FPS_59_94       ? "59.94" :	\
+	 i == HDSPE_VIDEO_FPS_60          ? "60" :	\
 	 "???")
 
 enum hdspe_tco_source {
@@ -612,6 +654,12 @@ struct hdspe_tco_status {
 	// LTC output control
 	enum hdspe_bool ltc_run;
 	enum hdspe_bool ltc_flywheel;
+
+	// HDSPE_VERSION 3:
+	uint32_t fw_version;
+	uint32_t fs_period_counter;
+	enum hdspe_video_fps video_in_fps;  // if fw_version >= 11
+	enum hdspe_speed wck_out_speed;
 };
 
 #define SNDRV_HDSPE_IOCTL_GET_LTC _IOR('H', 0x46, struct hdspe_tco_status)

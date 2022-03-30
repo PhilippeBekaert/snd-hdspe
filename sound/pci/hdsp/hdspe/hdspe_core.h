@@ -788,6 +788,7 @@ struct hdspe_tco {
 	enum hdspe_pull pull;
 	enum hdspe_wck_conversion wck_conversion;
 	enum hdspe_bool term;
+	enum hdspe_speed wck_out_speed;
 
 	/* LTC out control */
 	u32 ltc_out;             /* requested start LTC for output            */
@@ -807,7 +808,7 @@ struct hdspe_tco {
 
 	/* for measuring the actual LTC In fps and pull factor */
 #define LTC_CACHE_SIZE 60
-	u64 prev_ltc_time;        /* nanosecond timestamp of previous LTC irq */
+	u64 prev_ltc_time;        /* nanosecond timestamp of previous MTC irq */
 	u64 ltc_duration_sum;          /* sum of observed LTC frame durations */
 	u32 ltc_duration[LTC_CACHE_SIZE];     /* observed LTC frame durations */
 	u32 ltc_count;                       /* number of received LTC frames */
@@ -818,6 +819,8 @@ struct hdspe_tco {
 #ifdef DEBUG_MTC
 	u32 mtc;                                    /* current MIDI time code */
 #endif /*DEBUG_MTC*/
+
+	u8 fw_version;                                /* TCO firmware version */
 };
 
 /**
@@ -905,6 +908,8 @@ struct hdspe_ctl_ids {
 	struct snd_ctl_elem_id* tco_lock;
 	struct snd_ctl_elem_id* ltc_run;
 	struct snd_ctl_elem_id* ltc_jam_sync;
+	struct snd_ctl_elem_id* video_in_fps;
+  /*	struct snd_ctl_elem_id* wck_out_rate; */
 };
 
 struct hdspe {

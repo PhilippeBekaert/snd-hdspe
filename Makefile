@@ -28,6 +28,14 @@ insert: default
 remove:
 	rmmod snd-hdspe
 
+install: default
+	-rmmod snd-hdspm
+	-ln -s $(pwd) /usr/src/alsa-hdspe-0.0
+	dkms install alsa-hdspe/0.0
+
+uninstall:
+	dkms remove alsa-hdspe/0.0 --all
+
 list-controls:
 	-rm asound.state
 	alsactl -f asound.state store

@@ -309,13 +309,13 @@ int snd_hdspe_create_midi(struct snd_card* card,
 	err = snd_rawmidi_new(card, buf, id, 1, 1, &m->rmidi);
 	if (err < 0)
 		return err;
-
-	snprintf(m->rmidi->name, sizeof(m->rmidi->name),
-		 rw ? "%s MIDI %d" : "%s MTC %d",
-		 card->id, id+1);
+	  
 	m->rmidi->private_data = &hdspe->midi[id];
 
 	if (rw) {  // read-write port
+		snprintf(m->rmidi->name, sizeof(m->rmidi->name),
+			 "%s MIDI %d", card->id, id+1);
+
 		snd_rawmidi_set_ops(m->rmidi,
 				    SNDRV_RAWMIDI_STREAM_OUTPUT,
 				    &snd_hdspe_midi_output);
@@ -328,6 +328,9 @@ int snd_hdspe_create_midi(struct snd_card* card,
 			SNDRV_RAWMIDI_INFO_INPUT |
 			SNDRV_RAWMIDI_INFO_DUPLEX;
 	} else {   // read-only port (MTC from TCO module)
+		snprintf(m->rmidi->name, sizeof(m->rmidi->name),
+			 "%s MTC", card->id);
+
 		snd_rawmidi_set_ops(m->rmidi,
 				    SNDRV_RAWMIDI_STREAM_INPUT,
 				    &snd_hdspe_midi_input);

@@ -3,7 +3,7 @@
  * @file hdspe-control.h
  * @brief RME HDSPe sound card driver status and control interface helpers.
  *
- * 20210728,0907,08,09,10 - Philippe.Bekaert@uhasselt.be
+ * 20210728,0907,08,09,10,20220330 - Philippe.Bekaert@uhasselt.be
  *
  * Based on earlier work of the other MODULE_AUTHORs,
  * information kindly made available by RME (www.rme-audio.com),
@@ -67,6 +67,23 @@
 {	.iface = SNDRV_CTL_ELEM_IFACE_##xface,	\
 	.name = xname,				\
 	.access = SNDRV_CTL_ELEM_ACCESS_READWRITE,	\
+	.info = snd_hdspe_info_##prop,		\
+	.get = snd_hdspe_get_##prop,		\
+	.put = snd_hdspe_put_##prop		\
+}
+
+/**
+ * HDSPE_RWV_KCTL - generate a snd_kcontrol_new struct for a read-write 
+ * volatile property.
+ * @xface: MIXER, CARD, etc...
+ * @xname: display name for the property.
+ * @prop: source code name for the property. 
+ */
+#define HDSPE_RWV_KCTL(xface, xname, prop)	\
+{	.iface = SNDRV_CTL_ELEM_IFACE_##xface,	\
+	.name = xname,				\
+	.access = SNDRV_CTL_ELEM_ACCESS_READWRITE |	\
+                  SNDRV_CTL_ELEM_ACCESS_VOLATILE,	\
 	.info = snd_hdspe_info_##prop,		\
 	.get = snd_hdspe_get_##prop,		\
 	.put = snd_hdspe_put_##prop		\
@@ -443,6 +460,9 @@ static int snd_hdspe_put_##prop(struct snd_kcontrol *kcontrol,	        \
 
 #define HDSPE_ADD_RW_BOOL_CONTROL_ID(iface, name, prop)		\
 	HDSPE_ADD_CONTROL_ID(HDSPE_RW_BOOL_KCTL(iface, name, prop), prop)	
+
+#define HDSPE_ADD_RWV_CONTROL_ID(iface, name, prop)		\
+	HDSPE_ADD_CONTROL_ID(HDSPE_RWV_KCTL(iface, name, prop), prop)	
 
 	
 #endif /* _HDSPE_CONTROL_H_ */

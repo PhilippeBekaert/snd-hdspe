@@ -432,6 +432,8 @@ static int snd_hdspe_create(struct hdspe *hdspe)
 
 	pci_set_master(hdspe->pci);
 
+	/* TODO: mac driver sets PCI latency timer to 255 ??? */
+	
 	err = pci_request_regions(pci, "hdspe");
 	if (err < 0)
 		return err;

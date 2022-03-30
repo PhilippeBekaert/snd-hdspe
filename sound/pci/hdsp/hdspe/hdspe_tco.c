@@ -3,7 +3,8 @@
  * hdspe-tco.c
  * @brief RME HDSPe Time Code Option driver status and control interface.
  *
- * 20210728,0812,0902,24,28,1008,13,27 - Philippe.Bekaert@uhasselt.be
+ * 20210728,0812,0902,24,28,1008,13,27,20220325,29,30
+ * - Philippe.Bekaert@uhasselt.be
  *
  * Based on earlier work of the other MODULE_AUTHORS,
  * information kindly made available by RME (www.rme-audio.com),
@@ -23,7 +24,144 @@
 #endif /*DEBUG_LTC*/
 
 /**
- * TCO register definitions
+ * TCO register definitions:
+ *
+ * TCO0 : contains time code. Status (at HDSPE_RD_TCO byte offset): report
+ * current time code. Control (at HDSPE_WR_TCO offset): time code to set next.
+ *
+ * POS    MASK  STATUS             CONTROL (same as STATUS)
+ *
+ * 00        f  frames units
+ * 04       30  frames tens
+ * 06       40  unused
+ * 07       80  sync (1)
+ * 08      f00  seconds units
+ * 12     7000  seconds tens
+ * 15     8000  sync (1)
+ * 16    f0000  minutes unts
+ * 20   700000  minutes tens
+ * 23   800000  sync (1)
+ * 24  f000000  hour units
+ * 28 30000000  hour tens
+ * 30 40000000  unused
+ * 31 80000000  sync (1)
+ *
+ * (1) the sync bits have no significance for what concerns the driver.
+ * 
+ * TCO1 : status at byte offset HDSPE_RD_TCO+4, control at HDSPE_WR_TCO+4
+ *
+ * POS    MASK  STATUS             CONTROL
+ *
+ * 00        1  TCO lock           internal WCK out defeat
+ * 01        2  WCK input range    WCK output range    0=SS, 1=DS, 2=QS
+ * 02        4  "                  "
+ * 03        8  LTC input valid
+ * 04       10  WCK input valid    
+ * 05       20  video in format NTSC
+ * 06       40  video in format PAL
+ * 07       80  sync               sync
+ * 08      100                     set TC              upon rising edge
+ * 09      200  LTC rx drop frame  LTC tx drop frame   0 = full frame, 1 = DF 
+ * 10      400  LTC rx format LSB  LTC tx format LSB   0=24, 1=25, 2=29.97, 3=30
+ * 11      800  LTC rx format MSB  LTC tx format MSB   rx only 24/25/30
+ * 12     1000  Q-frame nr LSB
+ * 13     2000  Q-frame nr MSB
+ * 14     4000  new quarter frame  
+ * 15     8000  sync               sync
+ * 16    10000  sample position LSB sample position LSB
+ * 17    20000  "                  "
+ * 18    40000  "                  "
+ * 19    80000  "                  "
+ * 20   100000  "                  "
+ * 21   200000  "                  "
+ * 22   400000  "                  "
+ * 23   800000  sync               sync
+ * 24  1000000  sample position MSB sample position MSB
+ * 25  2000000  "                  "
+ * 26  4000000  "                  "
+ * 27  8000000  "                  "
+ * 28 10000000  "                  "
+ * 29 20000000  "                  "
+ * 30 40000000  "                  "
+ * 31 80000000  sync               sync
+ * 
+ * TCO2 : status at byte offset HDSPE_RD_TCO+8, control at HDSPE_WR_TCO+8
+ *
+ * POS    MASK  STATUS             CONTROL
+ *
+ * 00        1  FS period counter LSB                   WCK period counted at  
+ * 01        2  "                                       25 MHz (10 bit), 
+ * 02        4  "                                       16-sample sliding 
+ * 03        8  "                                       sum.
+ * 04       10  "
+ * 05       20  "
+ * 06       40  "
+ * 07       80  sync               sync
+ * 08      100  FS period counter MSB                   
+ * 09      200  "
+ * 10      400  "
+ * 11      800  "
+ * 12     1000  "
+ * 13     2000  "
+ * 14     4000  "
+ * 15     8000  sync               sync
+ * 16    10000                     TC run               0=pause, 1=run
+ * 17    20000                     WCK I/O rate         0=1:1, 1=44.1->48
+ * 18    40000                     "                    2=48->44.1
+ * 19    80000                     output drop frames   0..2, 3=continuous
+ * 20   100000                     "
+ * 21   200000                     jam sync             not implemented
+ * 22   400000                     flywheel             not implemented
+ * 23   800000  sync               sync
+ * 24  1000000                     0.1 / 4              0=0.1%, 1=4%
+ * 25  2000000                     pull-down            0=off, 1=on
+ * 26  4000000                     pull-up              0=off, 1=on
+ * 27  8000000  video in fps (1)   sample rate          0=44.1KHz, 1=48KHz
+ * 28 10000000  "                  75 Ohm termination   0=off, 1=on
+ * 29 20000000  "                  source select        0=WCK, 1=video, 2=LTC
+ * 30 40000000  "                  "
+ * 31 80000000  sync               sync
+ *
+ * (1) firmware version 11 or later. 0=no lock, 1=23.98, 2=24, 3=25, 4=29.97
+ * 5=30, 6=47.95, 7=48, 8=50, 9=59.94, 10=60
+ * 
+ * TCO3 : status at byte offset HDSPE_RD_TCO+12, control at HDSPE_WR_TCO+12
+ *
+ * POS    MASK  STATUS             CONTROL
+ *
+ * 00        1  sync               sync
+ * 01        2  sync               sync
+ * 02        4  sync               sync
+ * 03        8  sync               sync
+ * 04       10  sync               sync
+ * 05       20  sync               sync
+ * 06       40  sync               sync
+ * 07       80  sync               sync
+ * 08      100  sync               sync
+ * 09      200  sync               sync
+ * 10      400  sync               sync
+ * 11      800  sync               sync
+ * 12     1000  sync               sync
+ * 13     2000  sync               sync
+ * 14     4000  sync               sync
+ * 15     8000  sync               sync
+ * 16    10000  
+ * 17    20000  
+ * 18    40000  
+ * 19    80000  
+ * 20   100000  
+ * 21   200000  
+ * 22   400000                     TC number encoding   not implemented
+ * 23   800000  sync               sync
+ * 24  1000000  version LSB
+ * 25  2000000  "
+ * 26  4000000  "
+ * 27  8000000  "
+ * 28 10000000  "
+ * 29 20000000  "
+ * 30 40000000  version MSB
+ * 31 80000000  sync               sync
+ * 
  */
 
 #define HDSPE_TCO1_TCO_lock			0x00000001
@@ -39,7 +177,7 @@
 #define HDSPE_TCO1_LTC_Format_LSB		0x00000400
 #define HDSPE_TCO1_LTC_Format_MSB		0x00000800
 
-#define HDSPE_TCO1_STATUS_MASK                  0x00000cff
+#define HDSPE_TCO1_STATUS_MASK                  0x00000c7f
 
 #define HDSPE_TCO2_TC_run			0x00010000
 #define HDSPE_TCO2_WCK_IO_ratio_LSB		0x00020000
@@ -67,16 +205,16 @@ static const char* const tco1_bitNames[32] = {
 	"WCK_Input_valid",
 	"Video_Input_Format_NTSC",
 	"Video_Input_Format_PAL",
-	"?7",
+	"sync",
 
 	"set_TC",
 	"set_drop_frame_flag",
 	"LTC_Format_LSB",
 	"LTC_Format_MSB",
-        "?12",
-        "?13",
-        "?14",
-        "?15",
+        "Q-frame nr LSB",
+        "Q-frame nr MSB",
+        "new Q-frame",
+        "sync",
 	
         "off0",	
         "off1",
@@ -85,7 +223,7 @@ static const char* const tco1_bitNames[32] = {
         "off4",
         "off5",
         "off6",
-        "?23",
+        "sync",
 	
         "off7",
         "off8",
@@ -94,7 +232,7 @@ static const char* const tco1_bitNames[32] = {
         "off11",
         "off12",
         "off13",
-        "?31"
+        "sync"
 };
 
 #ifdef NEVER
@@ -106,7 +244,7 @@ static const char* const tco2_bitNames[32] = {
         "?04",
         "?05",
         "?06",
-        "?07",
+        "sync",
 	
         "?08",
         "?09",
@@ -115,7 +253,7 @@ static const char* const tco2_bitNames[32] = {
         "?12",
         "?13",
         "?14",
-        "?15",
+        "sync",
 
 	"TC_run",
 	"WCK_IO_ratio_LSB",
@@ -124,7 +262,7 @@ static const char* const tco2_bitNames[32] = {
 	"set_num_drop_frames_MSB",
 	"set_jam_sync",
 	"set_flywheel",
-	"?23",
+	"sync",
 
 	"set_01_4",
 	"set_pull_down",
@@ -182,6 +320,7 @@ u32 hdspe_read_tco(struct hdspe* hdspe, unsigned n)
 static inline __attribute__((always_inline))
 void hdspe_write_tco(struct hdspe* hdspe, unsigned n, u32 value)
 {
+	value &= 0x7f7f7f7f;
 	hdspe_write(hdspe, HDSPE_WR_TCO+n*4, cpu_to_le32(value));
 }
 
@@ -207,6 +346,14 @@ static void hdspe_tco_read_status1(struct hdspe* hdspe,
 	s->ltc_in_offset = ((tco1 >> 16) & 0x7F) | ((tco1 >> 17) & 0x3F80);
 }
 
+static void hdspe_tco_read_status2(struct hdspe* hdspe,
+				   struct hdspe_tco_status* s)
+{
+	u32 tco2 = hdspe_read_tco(hdspe, 2);
+	s->fs_period_counter = (tco2 & 0x7F) | ((tco2 & 0x7F00) >> 1);
+	s->video_in_fps = (tco2 >> 27) & 0x0F;
+}
+
 static void hdspe_tco_copy_control(struct hdspe* hdspe,
 				   struct hdspe_tco_status* s)
 {
@@ -223,15 +370,19 @@ static void hdspe_tco_copy_control(struct hdspe* hdspe,
 	s->term                = hdspe->tco->term;
 
 	s->ltc_run             = hdspe->tco->ltc_run;
-	s->ltc_flywheel        = hdspe->tco->ltc_flywheel;	
+	s->ltc_flywheel        = hdspe->tco->ltc_flywheel;
+
+	s->wck_out_speed       = hdspe->tco->wck_out_speed;
 }
 
 void hdspe_tco_read_status(struct hdspe* hdspe, struct hdspe_tco_status* s)
 {
         spin_lock(&hdspe->tco->lock);
 	s->version = HDSPE_VERSION;
+	s->fw_version = hdspe->tco->fw_version;
 	s->ltc_in = hdspe_read_tco(hdspe, 0);
 	hdspe_tco_read_status1(hdspe, s);
+	hdspe_tco_read_status2(hdspe, s);
 	hdspe_tco_copy_control(hdspe, s);
         spin_unlock(&hdspe->tco->lock);
 }
@@ -258,6 +409,8 @@ static void hdspe_tco_write_settings(struct hdspe* hdspe)
 
 	reg[0] = reg[1] = reg[2] = reg[3] = 0;
 
+	reg[1] |= FIELD_PREP(HDSPE_TCO1_WCK_Input_Range_MSB|
+			     HDSPE_TCO1_WCK_Input_Range_LSB, c->wck_out_speed);
 	reg[1] |= FIELD_PREP(HDSPE_TCO1_LTC_Format_MSB|
 			     HDSPE_TCO1_LTC_Format_LSB, c->ltc_fps);
 	reg[1] |= FIELD_PREP(HDSPE_TCO1_set_drop_frame_flag, c->ltc_drop);
@@ -270,6 +423,7 @@ static void hdspe_tco_write_settings(struct hdspe* hdspe)
 			      c->sample_rate == HDSPE_TCO_SAMPLE_RATE_48 ||
 			     (c->sample_rate == HDSPE_TCO_SAMPLE_RATE_FROM_APP
 			      && sys_48KHz));
+
 	reg[2] |= FIELD_PREP(HDSPE_TCO2_set_freq_from_app,
 			     c->sample_rate == HDSPE_TCO_SAMPLE_RATE_FROM_APP);
 	reg[2] |= FIELD_PREP(HDSPE_TCO2_set_term_75R, c->term);
@@ -287,9 +441,9 @@ static void hdspe_tco_write_settings(struct hdspe* hdspe)
 
 void hdspe_tco_set_app_sample_rate(struct hdspe* hdspe)
 {
-	/* Set TCO2_set_freq bit when internal frequency
-	 * of the sound card is changed to 48KHz or multiple thereof, and
-	 * TCO sample rate is "From App". */
+	/* Set/clear TCO2_set_freq bit when internal frequency
+	 * of the sound card is changed to something not corresponding
+	 * with TCO card frequency, and TCO sample rate is "From App". */
 	struct hdspe_tco* c = hdspe->tco;
 	bool tco_48KHz, sys_48KHz;
 	if (!c)
@@ -323,8 +477,10 @@ static void hdspe_tco_set_timecode(struct hdspe* hdspe,
 				   u32 timecode, u16 offset)
 {
 	struct hdspe_tco* c = hdspe->tco;
+	/* offset is stored as two groups of 7 bits */
+	uint32_t offset2 = ((offset & 0x3f80)<<1) | (offset & 0x7f);
 	hdspe_write_tco(hdspe, 0, timecode);
-	hdspe_write_tco(hdspe, 1, (offset << 16) | HDSPE_TCO1_set_TC |
+	hdspe_write_tco(hdspe, 1, (offset2 << 16) | HDSPE_TCO1_set_TC |
 			(c->reg[1] & 0xffff));
 	c->ltc_set = true;
 
@@ -358,7 +514,8 @@ struct hdspe_ltc {
 static const u32 hdspe_fps_tab[4] = { 24, 25, 30, 30 };
 static const u32 hdspe_scale_tab[4] = {1000, 1000, 999, 1000 };
 
-/* Offsets needed when starting time code, experimentally determined and verified. */
+/* Offsets needed when starting time code, experimentally determined and 
+ * verified. */
 static u32 hdspe_ltc_offset(u32 fps, enum hdspe_freq f)
 {
     u32 offset = 0;
@@ -411,7 +568,7 @@ static void hdspe_tco_start_timecode(struct hdspe* hdspe)
 	int n;   /* compensate this many frames w.r.t. pickup at next period */
 	s32 offset;       /* nr of samples to delay LTC start at next period */
 	u32 sr = hdspe_tco_get_sample_rate(hdspe);            /* sample rate */
-	u32 speedfactor = hdspe_speed_factor(hdspe);
+	u32 speedfactor = hdspe_speed_factor(hdspe);            /* 1, 2 or 4 */
 
 	struct hdspe_ltc ltc;
 	ltc.tc = c->ltc_out;
@@ -420,9 +577,9 @@ static void hdspe_tco_start_timecode(struct hdspe* hdspe)
 	ltc.scale = hdspe_scale_tab[c->ltc_fps];
 	ltc.df = c->ltc_drop;
 
-	ltc.fc /= speedfactor;   /* need single speed offset */
-	cfc /= speedfactor;
-	ps /= speedfactor;
+	ltc.fc /= speedfactor;   /* need single speed offset, */
+	cfc /= speedfactor;      /* frame count               */
+	ps /= speedfactor;       /* and period size           */
 
 	fs = sr * 1000 / (ltc.fps * ltc.scale);
 
@@ -673,8 +830,10 @@ void snd_hdspe_proc_read_tco(struct snd_info_entry *entry,
 	struct hdspe *hdspe = entry->private_data;
 	struct hdspe_tco *c = hdspe->tco;
 	struct hdspe_tco_status s;
-	u32 tco1 = hdspe_read_tco(hdspe, 1);
 	u32 ltc = hdspe_read_tco(hdspe, 0);
+	u32 tco1 = hdspe_read_tco(hdspe, 1);
+	u32 tco2 = hdspe_read_tco(hdspe, 2);
+	u32 tco3 = hdspe_read_tco(hdspe, 3);
 
 	if (!c) {
 		snd_BUG();
@@ -736,6 +895,13 @@ void snd_hdspe_proc_read_tco(struct snd_info_entry *entry,
 		    c->ltc_flywheel, HDSPE_BOOL_NAME(c->ltc_flywheel));
 	snd_iprintf(buffer, "LTC Set           : %d %s\n",
 		    c->ltc_set, HDSPE_BOOL_NAME(c->ltc_set));
+
+	snd_iprintf(buffer, "TCO FW version    : %d\n",
+		    (tco3 >> 24) & 0x7f);
+	snd_iprintf(buffer, "TCO WCK period    : %d/%d\n",
+		    ((tco2 & 0x7f00)>>1) | (tco2&0x7f), 25000000);
+	snd_iprintf(buffer, "Video Input FPS   : %d %s\n",
+		    (tco2 >> 27) & 0x0f, "");
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -747,6 +913,18 @@ static int hdspe_tco_get_status(struct hdspe* hdspe,
 	struct hdspe_tco_status status;
 	int val;
 	hdspe_tco_read_status1(hdspe, &status);
+	val = getter(&status);
+	dev_dbg(hdspe->card->dev, "%s(%s) = %d.\n", __func__, propname, val);
+	return val;
+}
+
+static int hdspe_tco_get_status2(struct hdspe* hdspe,
+				 int (*getter)(struct hdspe_tco_status*),
+				 const char* propname)		
+{
+	struct hdspe_tco_status status;
+	int val;
+	hdspe_tco_read_status2(hdspe, &status);
 	val = getter(&status);
 	dev_dbg(hdspe->card->dev, "%s(%s) = %d.\n", __func__, propname, val);
 	return val;
@@ -795,6 +973,30 @@ HDSPE_TCO_STATUS_GET_WITHOUT_GETTER(prop, item, field)
 
 #define HDSPE_TCO_STATUS_INT_METHODS(prop, field)		\
 	HDSPE_TCO_STATUS_GET(prop, integer.value, field)
+
+
+#define HDSPE_TCO_STATUS2_GET_WITHOUT_GETTER(prop, item, field)		\
+static int snd_hdspe_get_##prop(struct snd_kcontrol *kcontrol,	\
+				struct snd_ctl_elem_value *ucontrol)	\
+{									\
+	struct hdspe* hdspe = snd_kcontrol_chip(kcontrol);		\
+	ucontrol->value.item[0] = hdspe_tco_get_status2(		\
+		hdspe, hdspe_tco_get_status_##field, #prop);		\
+	return 0;							\
+}
+
+#define HDSPE_TCO_STATUS2_GET(prop, item, field)			\
+static int hdspe_tco_get_status_##field(struct hdspe_tco_status* s) \
+{									\
+	return s->field;						\
+}									\
+HDSPE_TCO_STATUS2_GET_WITHOUT_GETTER(prop, item, field)
+
+#define HDSPE_TCO_STATUS2_ENUM_METHODS(prop, field)		\
+	HDSPE_TCO_STATUS2_GET(prop, enumerated.item, field)
+
+#define HDSPE_TCO_STATUS2_INT_METHODS(prop, field)		\
+	HDSPE_TCO_STATUS2_GET(prop, integer.value, field)
 
 
 #define HDSPE_TCO_CONTROL_GET_WITHOUT_GETTER(prop, item, field)		\
@@ -867,6 +1069,28 @@ static int snd_hdspe_info_video(struct snd_kcontrol *kcontrol,
 }
 
 HDSPE_TCO_STATUS_ENUM_METHODS(video, video)
+
+static int snd_hdspe_info_video_in_fps(struct snd_kcontrol *kcontrol,
+				    struct snd_ctl_elem_info *uinfo)
+{
+	static const char *const texts[HDSPE_VIDEO_FPS_COUNT] = {
+		HDSPE_VIDEO_FPS_NAME(0),
+		HDSPE_VIDEO_FPS_NAME(1),
+		HDSPE_VIDEO_FPS_NAME(2),
+		HDSPE_VIDEO_FPS_NAME(3),
+		HDSPE_VIDEO_FPS_NAME(4),
+		HDSPE_VIDEO_FPS_NAME(5),
+		HDSPE_VIDEO_FPS_NAME(6),
+		HDSPE_VIDEO_FPS_NAME(7),
+		HDSPE_VIDEO_FPS_NAME(8),
+		HDSPE_VIDEO_FPS_NAME(9),
+		HDSPE_VIDEO_FPS_NAME(10)
+	};
+	ENUMERATED_CTL_INFO(uinfo, texts);
+	return 0;
+}
+
+HDSPE_TCO_STATUS2_ENUM_METHODS(video_in_fps, video_in_fps)
 	
 HDSPE_TCO_STATUS_ENUM_METHODS(wck_valid, wck_valid)
 
@@ -951,6 +1175,20 @@ static int snd_hdspe_info_wck_conversion(struct snd_kcontrol *kcontrol,
 HDSPE_TCO_CONTROL_ENUM_METHODS(wck_conversion, wck_conversion,
 	HDSPE_WCK_CONVERSION_COUNT)
 
+static int snd_hdspe_info_wck_out_speed(struct snd_kcontrol *kcontrol,
+					struct snd_ctl_elem_info *uinfo)
+{
+	static const char *const texts[HDSPE_SPEED_COUNT] = {
+		HDSPE_SPEED_NAME(0),
+		HDSPE_SPEED_NAME(1),
+		HDSPE_SPEED_NAME(2)
+	};
+	ENUMERATED_CTL_INFO(uinfo, texts);
+	return 0;
+}
+
+HDSPE_TCO_CONTROL_ENUM_METHODS(wck_out_speed, wck_out_speed, HDSPE_SPEED_COUNT);
+	
 static int snd_hdspe_info_frame_rate(struct snd_kcontrol *kcontrol,
 				     struct snd_ctl_elem_info *uinfo)
 {
@@ -1089,8 +1327,49 @@ static int snd_hdspe_put_ltc_out(struct snd_kcontrol *kcontrol,
 	return 0;    /* do not notify */
 }
 
+#ifdef NEVER
+static int snd_hdspe_info_wck_out_rate(struct snd_kcontrol* kcontrol,
+				  struct snd_ctl_elem_info *uinfo)
+{
+	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
+	uinfo->count = 2;
+	return 0;
+}
+
+static int snd_hdspe_get_wck_out_rate(struct snd_kcontrol *kcontrol,
+				      struct snd_ctl_elem_value *ucontrol)
+{
+	struct hdspe *hdspe = snd_kcontrol_chip(kcontrol);
+	struct hdspe_tco_status s;
+	hdspe_tco_read_status2(hdspe, &s);
+	ucontrol->value.integer.value[0] = 25000000 * 16; /* 25 MHz * 16*/
+	ucontrol->value.integer.value[1] = s.fs_period_counter;
+	dev_dbg(hdspe->card->dev, "%s = %d %d\n", __func__,
+		(int)ucontrol->value.integer.value[0],
+		(int)ucontrol->value.integer.value[1]);
+	return 0;
+}
+#endif /*NEVER*/
+
+static int snd_hdspe_info_fw_version(struct snd_kcontrol* kcontrol,
+				     struct snd_ctl_elem_info *uinfo)
+{
+	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
+	uinfo->count = 1;
+	return 0;
+}
+
+static int snd_hdspe_get_fw_version(struct snd_kcontrol *kcontrol,
+				  struct snd_ctl_elem_value *ucontrol)
+{
+	struct hdspe *hdspe = snd_kcontrol_chip(kcontrol);
+	ucontrol->value.integer.value[0] = hdspe->tco->fw_version;
+	return 0;
+}
+
 /* Control elements for the optional TCO module */
 static const struct snd_kcontrol_new snd_hdspe_controls_tco[] = {
+	HDSPE_RO_KCTL(CARD, "TCO Firmware", fw_version),
 	HDSPE_RW_KCTL(CARD, "LTC Sample Rate", sample_rate),
 	HDSPE_RW_KCTL(CARD, "TCO Pull", pull),
 	HDSPE_RW_KCTL(CARD, "TCO WordClk Conversion", wck_conversion),
@@ -1098,7 +1377,8 @@ static const struct snd_kcontrol_new snd_hdspe_controls_tco[] = {
 	HDSPE_RW_KCTL(CARD, "TCO Sync Source", sync_source),
 	HDSPE_RW_BOOL_KCTL(CARD, "TCO WordClk Term", word_term),
 	HDSPE_WO_KCTL(CARD, "LTC Out", ltc_out),
-	HDSPE_RV_KCTL(CARD, "LTC Time", ltc_time)
+	HDSPE_RV_KCTL(CARD, "LTC Time", ltc_time),
+	HDSPE_RW_KCTL(CARD, "TCO WordClk Out Speed", wck_out_speed)
 };
 
 #define CHECK_STATUS_CHANGE(prop)				 \
@@ -1120,6 +1400,7 @@ bool hdspe_tco_notify_status_change(struct hdspe* hdspe)
 	CHECK_STATUS_CHANGE(ltc_in_fps);
 	CHECK_STATUS_CHANGE(ltc_in_drop);
 	CHECK_STATUS_CHANGE(video);
+	CHECK_STATUS_CHANGE(video_in_fps);
 	CHECK_STATUS_CHANGE(wck_valid);
 	CHECK_STATUS_CHANGE(wck_speed);
 	CHECK_STATUS_CHANGE(tco_lock);
@@ -1140,9 +1421,13 @@ int hdspe_create_tco_controls(struct hdspe* hdspe)
 	HDSPE_ADD_RV_BOOL_CONTROL_ID(CARD, "LTC In Drop Frame", ltc_in_drop);
 	HDSPE_ADD_RV_CONTROL_ID(CARD, "LTC In Pull Factor", ltc_in_pullfac);
 	HDSPE_ADD_RV_CONTROL_ID(CARD, "TCO Video Format", video);
+	HDSPE_ADD_RV_CONTROL_ID(CARD, "TCO Video Frame Rate", video_in_fps);
 	HDSPE_ADD_RV_BOOL_CONTROL_ID(CARD, "TCO WordClk Valid", wck_valid);
 	HDSPE_ADD_RV_CONTROL_ID(CARD, "TCO WordClk Speed", wck_speed);
 	HDSPE_ADD_RV_BOOL_CONTROL_ID(CARD, "TCO Lock", tco_lock);
+#ifdef NEVER
+	HDSPE_ADD_RV_CONTROL_ID(CARD, "TCO WordClk Out Rate", wck_out_rate);
+#endif /*NEVER*/
 
 	HDSPE_ADD_RW_BOOL_CONTROL_ID(CARD, "LTC Run", ltc_run);
 	
@@ -1184,10 +1469,13 @@ int hdspe_init_tco(struct hdspe* hdspe)
 	spin_lock_init(&hdspe->tco->lock);
 	
 	hdspe->midiPorts++;
-	dev_info(hdspe->card->dev, "TCO module found\n");
 
 /*	hdspe->tco->ltc_out = 0xffffffff;      would not set LTC output */
 	hdspe_tco_write_settings(hdspe);
+
+	hdspe->tco->fw_version = (hdspe_read_tco(hdspe, 3) >> 24) & 0x7f;
+	dev_info(hdspe->card->dev, "TCO module found. Firmware version %d.\n",
+		 hdspe->tco->fw_version);
 
 #ifdef DEBUG_LTC
 	timer_setup(&hdspe->tco_timer, hdspe_tco_timer, 0);
