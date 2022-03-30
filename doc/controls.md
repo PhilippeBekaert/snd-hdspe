@@ -38,7 +38,7 @@ Controls common to all supported cards
 | CARD | Playback PID | RV | Int | Current playback process ID, or -1.            | 
 | CARD | Running | RV | Bool | Whether or not some process is capturing or playing back.            | 
 | CARD | Buffer Size | RV | Int | Sample buffer size, in frames.            | 
-| CARD | Status Polling | RW | Int | See below **Status Polling**            | 
+| CARD | Status Polling | RWV | Int | See below **Status Polling**            | 
 | HWDEP | DDS | RW | Int | See below **DDS**            | 
 | HWDEP | Raw Sample Rate | RV | Int64 | See below **DDS**            | 
 | CARD | Clock Mode | RW | Enum | Master or AutoSync.            | 
@@ -95,7 +95,7 @@ TCO controls
 | CARD | TCO Lock | RV | Bool | Whether or not the TCO is locked to LTC, Video or Word Clock | 
 | CARD | TCO Pull | RW | Enum | Pull Up / Pull Down factor |
 | CARD | TCO Sync Source | RW | Enum | TCO preferred synchronisation source: LTC, Video or Word Clock | 
-| CARD | TCO Video Format | RV | Enum | Video format reference signal detected: PAL or NTSC blackburst |
+| CARD | TCO Video Format | RV | Enum | Video format reference signal detected: PAL or NTSC blackburst. Firmware 11 or higher detect SDI reference signals of potential other frame rates, use TCO Video Frame Rate control if TCO firmware >- 11|
 | CARD | TCO Video Frame Rate | RV | Enum | Video frame rate detected (meaningful only if TCO firmware >= 11) |
 | CARD | TCO WordClk Conversion | RW | Enum | Word clock rate conversion 1:1, 44.1 -> 48 KHz, 48 -> 44.1 KHz | 
 | CARD | TCO WordClk Term | RW | Bool | Whether or not to 75 Ohm terminate the word clock/video input BNC | 
