@@ -104,6 +104,14 @@ assists module signing for secure boot.
 - For uninstalling, type
 
         sudo dkms remove alsa-hdspe/0.0
+
+- Or simply:
+
+        make install
+
+or
+
+        make uninstall
       
 
 **Documentation**
@@ -113,7 +121,7 @@ assists module signing for secure boot.
 
 **Status**
 
-At this time (December, 20 2021), the driver is still work in progress.
+At this time (March, 30 2022), the driver is still work in progress.
 - AES, AIO, AIO Pro, MADI, RayDAT and TCO control and PCM capture and playback, and MIDI
 support is ready for beta testing.
 - It is developed on ubuntu studio 20.04 and has only been tested on that distribution so far.
@@ -140,4 +148,4 @@ See [LICENSE](https://github.com/PhilippeBekaert/snd-hdspe/blob/main/LICENSE).
 
 **Author**
 
-[Philippe Bekaert](mailto:linux@panokkel.be), December 2021.
+[Philippe Bekaert](mailto:linux@panokkel.be), March 2022.
