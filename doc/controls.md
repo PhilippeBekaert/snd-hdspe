@@ -38,7 +38,7 @@ Controls common to all supported cards
 | CARD | Playback PID | RV | Int | Current playback process ID, or -1.            | 
 | CARD | Running | RV | Bool | Whether or not some process is capturing or playing back.            | 
 | CARD | Buffer Size | RV | Int | Sample buffer size, in frames.            | 
-| CARD | Status Polling | RW | Int | See below **Status Polling**            | 
+| CARD | Status Polling | RWV | Int | See below **Status Polling**            | 
 | HWDEP | DDS | RW | Int | See below **DDS**            | 
 | HWDEP | Raw Sample Rate | RV | Int64 | See below **DDS**            | 
 | CARD | Clock Mode | RW | Enum | Master or AutoSync.            | 
