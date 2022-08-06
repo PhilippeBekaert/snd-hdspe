@@ -1,2 +1,13 @@
-
+# OS files
 .DS_Store
+
+# Temp and object files
+deps
+modules.order
+Module.symvers
+
+*.cmd
+sound/pci/hdsp/hdspe/*.o
+sound/pci/hdsp/hdspe/*.ko
+sound/pci/hdsp/hdspe/*.mod
+sound/pci/hdsp/hdspe/*.mod.c
