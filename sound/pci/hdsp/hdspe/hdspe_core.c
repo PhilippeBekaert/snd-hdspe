@@ -44,6 +44,8 @@
 #include <sound/pcm.h>
 #include <sound/initval.h>
 
+#include <linux/version.h> 
+
 static int index[SNDRV_CARDS] = SNDRV_DEFAULT_IDX;	  /* Index 0-MAX */
 static char *id[SNDRV_CARDS] = SNDRV_DEFAULT_STR;	  /* ID for this card */
 static bool enable[SNDRV_CARDS] = SNDRV_DEFAULT_ENABLE_PNP;/* Enable this card */
@@ -422,9 +424,20 @@ static int snd_hdspe_create(struct hdspe *hdspe)
 	if (err < 0)
 		return err;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0) 
+	err = dma_set_mask(&pci->dev, DMA_BIT_MASK(32));
+#else 
 	err = pci_set_dma_mask(pci, DMA_BIT_MASK(32));
-	if (!err)
+#endif
+
+	if (!err) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 18, 0) 
+		err = dma_set_coherent_mask(&pci->dev, DMA_BIT_MASK(32));
+#else
 		err = pci_set_consistent_dma_mask(pci, DMA_BIT_MASK(32));
+#endif
+	}
+
 	if (err != 0) {
 		dev_err(card->dev, "No suitable DMA addressing support.\n");
 		return -ENODEV;
